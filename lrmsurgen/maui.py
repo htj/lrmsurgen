@@ -9,6 +9,11 @@
 
 from lrmsurgen import usagerecord
 
+try:
+    from xml.etree import ElementTree as ET
+except ImportError:
+    # Python 2.4 compatability
+    from elementtree import ElementTree as ET
 
 DEFAULT_LOG_DIR = '/var/spool/maui'
 STATS_DIR       = 'stats'
@@ -54,7 +59,7 @@ class MauiLogParser:
 
 
 
-def createUsageRecord(log_entry, hostname, global_user_map):
+def createUsageRecord(log_entry, hostname, usermap):
 
     ur = usagerecord.UsageRecord()
 
@@ -68,7 +73,7 @@ def createUsageRecord(log_entry, hostname, global_user_map):
     ur.global_job_id = job_id + '.' + hostname
 
     ur.local_user_id = user_name
-    ur.global_user_name = global_user_map.get(user_name)
+    ur.global_user_name = usermap.get(user_name)
 
     ur.machine_name = hostname
 
@@ -89,5 +94,22 @@ def createUsageRecord(log_entry, hostname, global_user_map):
     return ur
 
 
-##
+
+def generateUsageRecords(cfg, hostname, usermap):
+
+    log_file = 'samples/maui.entry'
+
+    mlp = MauiLogParser(log_file)
+
+    log_entry = mlp.getNextLogEntry()
+
+    job_id    = log_entry[0]
+    job_state = log_entry[6]
+    if not job_state == 'Completed':
+        print 'Skipping UR generation for job %s (state %s)' % (job_id, job_state)
+        return
+
+    ur = createUsageRecord(log_entry, hostname, usermap)
+
+    ET.dump(ur.generateTree())
 
