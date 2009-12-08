@@ -192,11 +192,11 @@ class UsageRecord:
         if self.submit_time    is not None :  setElement(ur, SUBMIT_TIME, self.submit_time)
         if self.start_time     is not None :  setElement(ur, START_TIME, self.start_time)
         if self.end_time       is not None :  setElement(ur, END_TIME, self.end_time)
-        if self.wall_duration  is not None :  setElement(ur, WALL_DURATION, "PT%iS" % self.wall_duration)
-        if self.cpu_duration   is not None :  setElement(ur, CPU_DURATION, "PT%iS" % self.cpu_duration)
+        if self.wall_duration  is not None :  setElement(ur, WALL_DURATION, "PT%fS" % self.wall_duration)
+        if self.cpu_duration   is not None :  setElement(ur, CPU_DURATION, "PT%fS" % self.cpu_duration)
         # sgas attributes
-        if self.user_time      is not None :  setElement(ur, SGAS_USER_TIME, "PT%iS" % self.user_time)
-        if self.kernel_time    is not None :  setElement(ur, SGAS_KERNEL_TIME, "PT%iS" % self.kernel_time)
+        if self.user_time      is not None :  setElement(ur, SGAS_USER_TIME, "PT%fS" % self.user_time)
+        if self.kernel_time    is not None :  setElement(ur, SGAS_KERNEL_TIME, "PT%fS" % self.kernel_time)
         if self.exit_code      is not None :  setElement(ur, SGAS_EXIT_CODE, self.exit_code)
         if self.major_page_faults is not None :
             setElement(ur, SGAS_MAJOR_PAGE_FAULTS, self.major_page_faults)
@@ -217,4 +217,9 @@ class UsageRecord:
 
 def gm2isoTime(gm_time):
     return time.strftime(ISO_TIME_FORMAT, gm_time) + "Z"
+
+
+def epoch2isoTime(epoch_time):
+    gmt = time.gmtime(epoch_time)
+    return gm2isoTime(gmt)
 

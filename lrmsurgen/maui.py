@@ -7,6 +7,9 @@
 # Copyright: Nordic Data Grid Facility (2009)
 
 
+from lrmsurgen import usagerecord
+
+
 DEFAULT_LOG_DIR = '/var/spool/maui'
 STATS_DIR       = 'stats'
 
@@ -35,8 +38,8 @@ class MauiLogParser:
 
         while True:
             line = self.file_.readline()
-            if line.startwith('VERSION'):
-                continue # all maui log files starts with a version, typically 230
+            if line.startswith('VERSION'):
+                continue # maui log files starts with a version, typically 230
             if line.startswith('#'):
                 continue # maui somtimes creates explanatory lines in the log file
             if line == '': # last line
@@ -47,7 +50,44 @@ class MauiLogParser:
 
     def getNextLogEntry(self):
         line = self.getNextLogLine()
-        return splitLineEntry(line)
+        return self.splitLineEntry(line)
 
 
+
+def createUsageRecord(log_entry, hostname, global_user_map):
+
+    ur = usagerecord.UsageRecord()
+
+    job_id    = log_entry[0]
+    user_name = log_entry[3]
+    job_state = log_entry[6]
+
+    ur.record_id = job_id + '.' + hostname
+
+    ur.local_job_id = job_id
+    ur.global_job_id = job_id + '.' + hostname
+
+    ur.local_user_id = user_name
+    ur.global_user_name = global_user_map.get(user_name)
+
+    ur.machine_name = hostname
+
+    r_class = log_entry[7]
+    r_class = r_class.replace('[','').replace(']','')
+    if ':' in r_class:
+        r_class = r_class.split(':')[0]
+
+    ur.queue = r_class
+    ur.node_count = int(log_entry[1]) or 1 # set to 1 if 0
+
+    ur.submit_time = usagerecord.epoch2isoTime(int(log_entry[8]))
+    ur.start_time  = usagerecord.epoch2isoTime(int(log_entry[10]))
+    ur.end_time    = usagerecord.epoch2isoTime(int(log_entry[11]))
+
+    ur.wall_duration = float(log_entry[29])
+
+    return ur
+
+
+##
 

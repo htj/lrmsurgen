@@ -1,0 +1,49 @@
+#!/usr/bin/env python
+#
+# LRMS UR Generator executable.
+#
+# Module for the LRMS UR Generator module.
+#
+# Author: Henrik Thostrup Jensen <htj@ndgf.org>
+# Copyright: Nordic Data Grid Facility (2009)
+
+
+
+def main():
+
+    import sys
+    from lrmsurgen import maui, usagerecord
+    try:
+        from xml.etree import ElementTree as ET
+    except ImportError:
+        # Python 2.4 compatability
+        from elementtree import ElementTree as ET
+
+
+    mlp = maui.MauiLogParser(sys.argv[1])
+
+    log_entry = mlp.getNextLogEntry()
+
+    job_id    = log_entry[0]
+    job_state = log_entry[6]
+
+    #print job_state
+    if not job_state == 'Completed':
+        print 'Skipping UR generation for job %s (state %s)' % (job_id, job_state)
+        return
+
+    #import socket
+    #hostname = socket.getfqdn()
+    hostname = 'magna.example.org'
+
+    gu_map = {'grid: ' : '/O=Grid/O=NorduGrid/OU=ndgf.org/CN=Henrik Thostrup Jensen'}
+
+    ur = maui.createUsageRecord(log_entry, hostname, gu_map)
+
+    ET.dump(ur.generateTree())
+
+
+
+if __name__ == '__main__':
+    main()
+
