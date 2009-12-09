@@ -6,6 +6,7 @@
 # Author: Henrik Thostrup Jensen <htj@ndgf.org>
 # Copyright: Nordic Data Grid Facility (2009)
 
+import logging
 
 from lrmsurgen import usagerecord
 
@@ -55,6 +56,8 @@ class MauiLogParser:
 
     def getNextLogEntry(self):
         line = self.getNextLogLine()
+        if line is None:
+            return None
         return self.splitLineEntry(line)
 
 
@@ -101,15 +104,31 @@ def generateUsageRecords(cfg, hostname, usermap):
 
     mlp = MauiLogParser(log_file)
 
-    log_entry = mlp.getNextLogEntry()
+    while True:
 
-    job_id    = log_entry[0]
-    job_state = log_entry[6]
-    if not job_state == 'Completed':
-        print 'Skipping UR generation for job %s (state %s)' % (job_id, job_state)
-        return
+        log_entry = mlp.getNextLogEntry()
+        if log_entry is None:
+            break
 
-    ur = createUsageRecord(log_entry, hostname, usermap)
+        job_id    = log_entry[0]
+        user_name = log_entry[3]
+        job_state = log_entry[6]
 
-    ET.dump(ur.generateTree())
+        # check if the ur should be generated
+        if not job_state == 'Completed':
+            logging.info('Job %s: Skipping UR generation (state %s)' % (job_id, job_state))
+            logging.debug('Job %s: No UR will be generated.' % job_id)
+            continue
+        if not user_name in usermap:
+            logging.warning('Job %s: No mapping for username %s in user map.' % (job_id, user_name))
+            logging.debug('Job %s: No UR will be generated.' % job_id)
+            continue
+        if usermap[user_name] is None:
+            logging.info('Jobs %s: User configured to skip UR generation' % job_id)
+            logging.debug('Job %s: No UR will be generated.' % job_id)
+            continue
+
+        ur = createUsageRecord(log_entry, hostname, usermap)
+
+        ET.dump(ur.generateTree())
 

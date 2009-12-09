@@ -7,7 +7,10 @@
 # Author: Henrik Thostrup Jensen <htj@ndgf.org>
 # Copyright: Nordic Data Grid Facility (2009)
 
+import os
 import sys
+import logging
+import datetime
 
 from lrmsurgen import config
 
@@ -15,28 +18,44 @@ from lrmsurgen import config
 
 def main():
 
+    # start with command line parsing and various setups
+
     parser = config.getParser()
     options, args = parser.parse_args()
+    if not os.path.exists(options.config):
+        # we don't have logging yet
+        print 'Configuration file %s does not exist' % options.config
+        sys.exit(1)
+
     cfg = config.getConfig(options.config)
 
-    hostname = config.getConfigValue(cfg, 'common', 'hostname')
+    logfile = options.logfile
+    if logfile is None:
+        logfile = config.getConfigValue(cfg, config.SECTION_COMMON, config.LOGFILE, config.DEFAULT_LOG_FILE)
+    print logfile
+
+    logging.basicConfig(filename=logfile, level=logging.DEBUG)
+    logging.debug('=== LRMS UR Generator started. Time: %s ===' % str(datetime.datetime.now()))
+
+    hostname = config.getConfigValue(cfg, config.SECTION_COMMON, config.HOSTNAME)
     if hostname is None:
         import socket
         hostname = socket.getfqdn()
 
-    usermap_file = config.getConfigValue(cfg, 'common', 'usermap', config.DEFAULT_USERMAP_FILE)
+    usermap_file = config.getConfigValue(cfg, config.SECTION_COMMON, config.USERMAP, config.DEFAULT_USERMAP_FILE)
+
+    # basic configuration done, read usermap and start lrms ur module
 
     try:
         usermap = config.getUserMap(usermap_file)
     except IOError:
-        print 'IOError while attempting to read usermap (missing file)'
+        logging.error('IOError while attempting to read usermap at %s (missing file?)' % usermap_file)
         sys.exit(2)
-        return
 
     sections = cfg.sections()
-    if 'maui' in sections:
+    if config.SECTION_MAUI in sections:
         from lrmsurgen import maui as lrms
-    # more to come...
+    # more LRMSes to come...
 
     lrms.generateUsageRecords(cfg, hostname, usermap)
 
