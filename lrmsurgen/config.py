@@ -10,16 +10,22 @@ import re
 import ConfigParser
 from optparse import OptionParser
 
-DEFAULT_CONFIG_FILE  = '/etc/lrmsurgen.conf'
-DEFAULT_USERMAP_FILE = '/etc/lrmsurgen.usermap'
-DEFAULT_LOG_FILE     = '/var/log/lrmsurgen.log'
+DEFAULT_CONFIG_FILE    = '/etc/lrmsurgen.conf'
+DEFAULT_USERMAP_FILE   = '/etc/lrmsurgen.usermap'
+DEFAULT_LOG_FILE       = '/var/log/lrmsurgen.log'
+DEFAULT_STATEDIR       = '/var/spool/lrmsurgen'
+DEFAULT_MAUI_SPOOL_DIR = '/var/spool/maui'
 
 SECTION_COMMON = 'common'
-SECTION_MAUI   = 'maui'
+SECTION_MAUI    = 'maui'
 
 HOSTNAME = 'hostname'
 USERMAP  = 'usermap'
 LOGFILE  = 'logfile'
+STATEDIR = 'statedir'
+
+MAUI_SPOOL_DIR  = 'spooldir'
+
 
 # redularr expression for matching authz lines
 rx = re.compile('''\s*(.*)\s*"(.*)"''')

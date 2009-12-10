@@ -32,7 +32,6 @@ def main():
     logfile = options.logfile
     if logfile is None:
         logfile = config.getConfigValue(cfg, config.SECTION_COMMON, config.LOGFILE, config.DEFAULT_LOG_FILE)
-    print logfile
 
     logging.basicConfig(filename=logfile, level=logging.DEBUG)
     logging.debug('=== LRMS UR Generator started. Time: %s ===' % str(datetime.datetime.now()))

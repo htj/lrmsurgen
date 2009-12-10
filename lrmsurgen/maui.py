@@ -6,9 +6,11 @@
 # Author: Henrik Thostrup Jensen <htj@ndgf.org>
 # Copyright: Nordic Data Grid Facility (2009)
 
+import os
+import time
 import logging
 
-from lrmsurgen import usagerecord
+from lrmsurgen import config, usagerecord
 
 try:
     from xml.etree import ElementTree as ET
@@ -16,13 +18,18 @@ except ImportError:
     # Python 2.4 compatability
     from elementtree import ElementTree as ET
 
-DEFAULT_LOG_DIR = '/var/spool/maui'
-STATS_DIR       = 'stats'
+
+MAUI_DATE_FORMAT = '%a_%b_%d_%Y'
+DEFAULT_LOG_DIR  = '/var/spool/maui'
+STATS_DIR        = 'stats'
+STATE_FILE       = 'maui.state'
 
 
 
 class MauiLogParser:
-
+    """
+    Parser for maui stats log.
+    """
     def __init__(self, log_file):
         self.log_file = log_file
         self.file_ = None
@@ -61,9 +68,19 @@ class MauiLogParser:
         return self.splitLineEntry(line)
 
 
+    def spoolToEntry(self, entry_id):
+        while True:
+            log_entry = self.getNextLogEntry()
+            if log_entry is None or log_entry[0] == job_id:
+                break
+
+
+
 
 def createUsageRecord(log_entry, hostname, usermap):
-
+    """
+    Creates a Usage Record object given a Maui log entry.
+    """
     ur = usagerecord.UsageRecord()
 
     job_id    = log_entry[0]
@@ -98,37 +115,108 @@ def createUsageRecord(log_entry, hostname, usermap):
 
 
 
+def shouldGenerateUR(log_entry):
+    """
+    Decides wheater a log entry is 'suitable' for generating
+    a ur from.
+    """
+    job_id    = log_entry[0]
+    user_name = log_entry[3]
+    job_state = log_entry[6]
+
+    if not job_state == 'Completed':
+        logging.info('Job %s: Skipping UR generation (state %s)' % (job_id, job_state))
+        return False
+    if not user_name in usermap:
+        logging.warning('Job %s: No mapping for username %s in user map.' % (job_id, user_name))
+        return False
+    if usermap[user_name] is None:
+        logging.info('Jobs %s: User configured to skip UR generation' % job_id)
+        return False
+
+    return True
+
+
+
+def getMauiDate(gmtime):
+    """
+    Returns a maui date, e.g., 'Thu_Dec_10_2009', given a time.gmtime object.
+    """
+    return time.strftime(MAUI_DATE_FORMAT, gmtime)
+
+
+
+def getIncrementalMauiDate(maui_date):
+    """
+    Returns the following day in maui date format, given a date
+    in maui date format.
+    """
+
+    raise NotImplementedError('wee')
+
+
+def getStateFileLocation(cfg):
+    """
+    Returns the location of state file
+    The state file contains the information of whereto the ur generation has been processed
+    """
+    state_dir = config.getConfigValue(cfg, config.SECTION_COMMON, config.STATEDIR, config.DEFAULT_STATEDIR)
+    state_file = os.path.join(state_dir, STATE_FILE)
+    return state_file
+
+
+
+def getGeneratorState(cfg):
+    """
+    Get state of where to the UR generation has reached in the maui log.
+    This is two string tuple containing the jobid and the log file.
+    """
+    state_file = getStateFileLocation(cfg)
+    if not os.path.exists(state_file):
+        # no statefile -> we start from today
+        return None, getMauiDate(time.gmtime())
+
+    state_data = open(state_file).readline() # state is only on the first line
+    print "STATE", state_data
+    raise NotImplementedError('Oh noes')
+
+
+
+
 def generateUsageRecords(cfg, hostname, usermap):
+    """
+    Starts the UR generation process.
+    """
 
-    log_file = 'samples/maui.entry'
+    maui_spool_dir = config.getConfigValue(cfg, config.SECTION_MAUI, config.MAUI_SPOOL_DIR,
+                                           config.DEFAULT_MAUI_SPOOL_DIR)
+#    log_file = 'samples/maui.entry'
 
-    mlp = MauiLogParser(log_file)
+    job_id, maui_date = getGeneratorState(cfg)
 
     while True:
 
-        log_entry = mlp.getNextLogEntry()
-        if log_entry is None:
-            break
+        log_file = os.path.join(maui_spool_dir, STATS_DIR, maui_date)
+        print log_file
+        mlp = MauiLogParser(log_file)
+        if job_id is not None:
+            mlp.spoolToEntry(job_id)
 
-        job_id    = log_entry[0]
-        user_name = log_entry[3]
-        job_state = log_entry[6]
+        while True:
 
-        # check if the ur should be generated
-        if not job_state == 'Completed':
-            logging.info('Job %s: Skipping UR generation (state %s)' % (job_id, job_state))
-            logging.debug('Job %s: No UR will be generated.' % job_id)
-            continue
-        if not user_name in usermap:
-            logging.warning('Job %s: No mapping for username %s in user map.' % (job_id, user_name))
-            logging.debug('Job %s: No UR will be generated.' % job_id)
-            continue
-        if usermap[user_name] is None:
-            logging.info('Jobs %s: User configured to skip UR generation' % job_id)
-            logging.debug('Job %s: No UR will be generated.' % job_id)
-            continue
+            log_entry = mlp.getNextLogEntry()
+            if log_entry is None:
+                break # no more log entries
 
-        ur = createUsageRecord(log_entry, hostname, usermap)
+            job_id    = log_entry[0]
+            if not shouldGenerateUR(log_entry, usermap):
+                logging.debug('Job %s: No UR will be generated.' % job_id)
+                continue
 
-        ET.dump(ur.generateTree())
+            ur = createUsageRecord(log_entry, hostname, usermap)
 
+            ET.dump(ur.generateTree())
+            job_id = None
+
+
+        break # haven't got looping right yet
