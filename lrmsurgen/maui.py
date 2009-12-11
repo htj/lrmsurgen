@@ -8,6 +8,7 @@
 
 import os
 import time
+import datetime
 import logging
 
 from lrmsurgen import config, usagerecord
@@ -71,7 +72,7 @@ class MauiLogParser:
     def spoolToEntry(self, entry_id):
         while True:
             log_entry = self.getNextLogEntry()
-            if log_entry is None or log_entry[0] == job_id:
+            if log_entry is None or log_entry[0] == entry_id:
                 break
 
 
@@ -115,7 +116,7 @@ def createUsageRecord(log_entry, hostname, usermap):
 
 
 
-def shouldGenerateUR(log_entry):
+def shouldGenerateUR(log_entry, usermap):
     """
     Decides wheater a log entry is 'suitable' for generating
     a ur from.
@@ -151,8 +152,13 @@ def getIncrementalMauiDate(maui_date):
     Returns the following day in maui date format, given a date
     in maui date format.
     """
+    gm_td = time.strptime(maui_date, MAUI_DATE_FORMAT)
+    d = datetime.date(gm_td.tm_year, gm_td.tm_mon, gm_td.tm_mday)
+    day = datetime.timedelta(days=1)
+    d2 = d + day
+    next_maui_date = time.strftime(MAUI_DATE_FORMAT, d2.timetuple())
+    return next_maui_date
 
-    raise NotImplementedError('wee')
 
 
 def getStateFileLocation(cfg):
@@ -174,12 +180,25 @@ def getGeneratorState(cfg):
     state_file = getStateFileLocation(cfg)
     if not os.path.exists(state_file):
         # no statefile -> we start from today
-        return None, getMauiDate(time.gmtime())
+        t_old = time.time() - 500000
+        return None, getMauiDate(time.gmtime(t_old))
 
     state_data = open(state_file).readline() # state is only on the first line
-    print "STATE", state_data
     raise NotImplementedError('Oh noes')
 
+
+
+def writeGeneratorState(cfg, job_id, maui_log_file):
+    """
+    Write the state of where the maui logs have been parsed to.
+    This is a job id and maui date (log file and entry).
+    """
+    state_file = getStateFileLocation(cfg)
+    state_data = '%s %s' % (job_id, maui_log_file)
+
+    f = open(state_file, 'w')
+    f.write(state_data)
+    f.close()
 
 
 
@@ -190,14 +209,14 @@ def generateUsageRecords(cfg, hostname, usermap):
 
     maui_spool_dir = config.getConfigValue(cfg, config.SECTION_MAUI, config.MAUI_SPOOL_DIR,
                                            config.DEFAULT_MAUI_SPOOL_DIR)
-#    log_file = 'samples/maui.entry'
 
+    maui_date_today = getMauiDate(time.gmtime())
     job_id, maui_date = getGeneratorState(cfg)
 
     while True:
 
         log_file = os.path.join(maui_spool_dir, STATS_DIR, maui_date)
-        print log_file
+        print "---", log_file
         mlp = MauiLogParser(log_file)
         if job_id is not None:
             mlp.spoolToEntry(job_id)
@@ -218,5 +237,14 @@ def generateUsageRecords(cfg, hostname, usermap):
             ET.dump(ur.generateTree())
             job_id = None
 
+        if maui_date == maui_date_today:
+            break
 
-        break # haven't got looping right yet
+        maui_date = getIncrementalMauiDate(maui_date)
+        job_id = None
+
+
+    #print job_id, maui_date
+    writeGeneratorState(cfg, job_id, maui_date)
+
+
