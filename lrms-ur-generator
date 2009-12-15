@@ -56,7 +56,14 @@ def main():
         from lrmsurgen import maui as lrms
     # more LRMSes to come...
 
-    lrms.generateUsageRecords(cfg, hostname, usermap)
+    try:
+        lrms.generateUsageRecords(cfg, hostname, usermap)
+    except Exception, e:
+        logging.error('Got exception while generating usage records. Exception follows.')
+        logging.exception(e)
+        print
+        raise
+    sys.exit(3)
 
 
 if __name__ == '__main__':

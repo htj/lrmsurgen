@@ -184,8 +184,10 @@ def getGeneratorState(cfg):
         return None, getMauiDate(time.gmtime(t_old))
 
     state_data = open(state_file).readline() # state is only on the first line
-    raise NotImplementedError('Oh noes')
-
+    job_id, maui_date = state_data.split(' ', 2)
+    if job_id == '-':
+        job_id = None
+    return job_id, maui_date
 
 
 def writeGeneratorState(cfg, job_id, maui_log_file):
@@ -194,7 +196,11 @@ def writeGeneratorState(cfg, job_id, maui_log_file):
     This is a job id and maui date (log file and entry).
     """
     state_file = getStateFileLocation(cfg)
-    state_data = '%s %s' % (job_id, maui_log_file)
+    state_data = '%s %s' % (job_id or '-', maui_log_file)
+
+    dirpath = os.path.dirname(state_file)
+    if not os.path.exists(dirpath):
+        os.makedirs(dirpath, mode=0750)
 
     f = open(state_file, 'w')
     f.write(state_data)
@@ -212,6 +218,7 @@ def generateUsageRecords(cfg, hostname, usermap):
 
     maui_date_today = getMauiDate(time.gmtime())
     job_id, maui_date = getGeneratorState(cfg)
+    print job_id, maui_date
 
     while True:
 
@@ -223,11 +230,19 @@ def generateUsageRecords(cfg, hostname, usermap):
 
         while True:
 
-            log_entry = mlp.getNextLogEntry()
+            try:
+                log_entry = mlp.getNextLogEntry()
+            except IOError, e:
+                if maui_date == maui_date_today: # today entry might not exist yet
+                    #logging.info('Error opening log file for today')
+                    break
+                logging.error('Error opening log file at %s for date %s' % (log_file, maui_date))
+                break
+
             if log_entry is None:
                 break # no more log entries
 
-            job_id    = log_entry[0]
+            job_id = log_entry[0]
             if not shouldGenerateUR(log_entry, usermap):
                 logging.debug('Job %s: No UR will be generated.' % job_id)
                 continue
