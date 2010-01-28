@@ -1,4 +1,19 @@
 LRMS UR Generator.
 
-Add description here.
+Program for generating usage records form LRMS information.
+
+Currently Maui is supported.
+
+
+Installation:
+
+python setup.py install
+
+mkdir /etc/lrmsurgen/
+cp examples/* /etc/lrmsurgen/
+
+# edit the two files and set values
+# note that URs will only be generated for users in the usermap file
+
+add lrms-ur-generator to cron.hourly
 
