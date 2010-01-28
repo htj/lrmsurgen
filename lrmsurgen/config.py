@@ -10,8 +10,8 @@ import re
 import ConfigParser
 from optparse import OptionParser
 
-DEFAULT_CONFIG_FILE    = '/etc/lrmsurgen.conf'
-DEFAULT_USERMAP_FILE   = '/etc/lrmsurgen.usermap'
+DEFAULT_CONFIG_FILE    = '/etc/lrmsurgen/lrmsurgen.conf'
+DEFAULT_USERMAP_FILE   = '/etc/lrmsurgen/usermap'
 DEFAULT_LOG_DIR        = '/var/spool/usagerecords'
 DEFAULT_LOG_FILE       = '/var/log/lrmsurgen.log'
 DEFAULT_STATEDIR       = '/var/spool/lrmsurgen'
