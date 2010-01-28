@@ -110,7 +110,12 @@ def createUsageRecord(log_entry, hostname, usermap):
     ur.start_time  = usagerecord.epoch2isoTime(int(log_entry[10]))
     ur.end_time    = usagerecord.epoch2isoTime(int(log_entry[11]))
 
-    ur.wall_duration = float(log_entry[29])
+    ur.cpu_duration = float(log_entry[29])
+    ur.wall_duration = float(log_entry[11]) - float(log_entry[10])
+
+    acc_name = log_entry[25]
+    if acc_name != '[NONE]':
+        ur.project_name = acc_name
 
     return ur
 
@@ -183,7 +188,7 @@ def getGeneratorState(cfg):
         t_old = time.time() - 500000
         return None, getMauiDate(time.gmtime(t_old))
 
-    state_data = open(state_file).readline() # state is only on the first line
+    state_data = open(state_file).readline().strip() # state is only on the first line
     job_id, maui_date = state_data.split(' ', 2)
     if job_id == '-':
         job_id = None
@@ -218,12 +223,11 @@ def generateUsageRecords(cfg, hostname, usermap):
 
     maui_date_today = getMauiDate(time.gmtime())
     job_id, maui_date = getGeneratorState(cfg)
-    print job_id, maui_date
+    #print job_id, maui_date
 
     while True:
 
         log_file = os.path.join(maui_spool_dir, STATS_DIR, maui_date)
-        print "---", log_file
         mlp = MauiLogParser(log_file)
         if job_id is not None:
             mlp.spoolToEntry(job_id)
@@ -233,7 +237,7 @@ def generateUsageRecords(cfg, hostname, usermap):
             try:
                 log_entry = mlp.getNextLogEntry()
             except IOError, e:
-                if maui_date == maui_date_today: # today entry might not exist yet
+                if maui_date == maui_date_today: # todays entry might not exist yet
                     #logging.info('Error opening log file for today')
                     break
                 logging.error('Error opening log file at %s for date %s' % (log_file, maui_date))
@@ -248,8 +252,14 @@ def generateUsageRecords(cfg, hostname, usermap):
                 continue
 
             ur = createUsageRecord(log_entry, hostname, usermap)
+            log_dir = config.getConfigValue(cfg, config.SECTION_COMMON, config.LOGDIR, config.DEFAULT_LOG_DIR)
+            ur_dir = os.path.join(log_dir, 'urs')
+            if not os.path.exists(ur_dir):
+                os.makedirs(ur_dir)
 
-            ET.dump(ur.generateTree())
+            ur_file = os.path.join(ur_dir, job_id)
+            ur.writeXML(ur_file)
+
             job_id = None
 
         if maui_date == maui_date_today:
@@ -257,7 +267,6 @@ def generateUsageRecords(cfg, hostname, usermap):
 
         maui_date = getIncrementalMauiDate(maui_date)
         job_id = None
-
 
     #print job_id, maui_date
     writeGeneratorState(cfg, job_id, maui_date)

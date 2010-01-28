@@ -19,7 +19,6 @@ from lrmsurgen import config
 def main():
 
     # start with command line parsing and various setups
-
     parser = config.getParser()
     options, args = parser.parse_args()
     if not os.path.exists(options.config):
@@ -59,7 +58,7 @@ def main():
     try:
         lrms.generateUsageRecords(cfg, hostname, usermap)
     except Exception, e:
-        logging.error('Got exception while generating usage records. Exception follows.')
+        logging.error('Got exception while generating usage records:')
         logging.exception(e)
         print
         raise

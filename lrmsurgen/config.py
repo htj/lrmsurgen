@@ -12,6 +12,7 @@ from optparse import OptionParser
 
 DEFAULT_CONFIG_FILE    = '/etc/lrmsurgen.conf'
 DEFAULT_USERMAP_FILE   = '/etc/lrmsurgen.usermap'
+DEFAULT_LOG_DIR        = '/var/spool/usagerecords'
 DEFAULT_LOG_FILE       = '/var/log/lrmsurgen.log'
 DEFAULT_STATEDIR       = '/var/spool/lrmsurgen'
 DEFAULT_MAUI_SPOOL_DIR = '/var/spool/maui'
@@ -21,13 +22,14 @@ SECTION_MAUI    = 'maui'
 
 HOSTNAME = 'hostname'
 USERMAP  = 'usermap'
+LOGDIR   = 'logdir'
 LOGFILE  = 'logfile'
 STATEDIR = 'statedir'
 
 MAUI_SPOOL_DIR  = 'spooldir'
 
 
-# redularr expression for matching authz lines
+# redularr expression for matching usermap lines
 rx = re.compile('''\s*(.*)\s*"(.*)"''')
 
 
