@@ -88,6 +88,9 @@ def createUsageRecord(log_entry, hostname, usermap):
     user_name = log_entry[3]
     job_state = log_entry[6]
 
+    if not user_name in usermap:
+        logging.warning('Job %s: No mapping for username %s in user map.' % (job_id, user_name))
+
     ur.record_id = job_id + '.' + hostname
 
     ur.local_job_id = job_id
