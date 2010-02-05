@@ -1,2 +1,4 @@
 # local     "userdn"
 test        "/O=Grid/O=ExampleOrganization/OU=example.org/CN=Test User"
+# disable ur logging for johndoe user
+johndoe     -
