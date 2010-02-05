@@ -136,7 +136,7 @@ def shouldGenerateUR(log_entry, usermap):
     if not job_state == 'Completed':
         logging.info('Job %s: Skipping UR generation (state %s)' % (job_id, job_state))
         return False
-    if usermap[user_name] is None:
+    if user_name in usermap and usermap[user_name] is None:
         logging.info('Jobs %s: User configured to skip UR generation' % job_id)
         return False
 
@@ -259,6 +259,7 @@ def generateUsageRecords(cfg, hostname, usermap):
 
             ur_file = os.path.join(ur_dir, job_id)
             ur.writeXML(ur_file)
+            writeGeneratorState(cfg, job_id, maui_date)
             logging.info('Wrote usage record to %s' % ur_file)
 
             job_id = None
@@ -270,6 +271,6 @@ def generateUsageRecords(cfg, hostname, usermap):
         job_id = None
 
     #print job_id, maui_date
-    writeGeneratorState(cfg, job_id, maui_date)
+    #writeGeneratorState(cfg, job_id, maui_date)
 
 
