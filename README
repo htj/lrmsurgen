@@ -19,3 +19,14 @@ add lrms-ur-generator to cron.hourly
 # check /var/log/lrmsurgen.log after invokation
 # generated urs will be in /var/spool/usagerecords/ or a custom dir set with logdir
 
+
+
+Development:
+
+Start by reading lrms-ur-generator to get a feel of the thing.
+
+See lrmsurgen/maui.py for how the maui generation was done.
+
+See lrmsurgen/usagerecord.py for UR generation details.
+UR generation example can be seen in lrmsurgen/maui.py
+
