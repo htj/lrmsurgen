@@ -13,7 +13,9 @@ mkdir /etc/lrmsurgen/
 cp examples/* /etc/lrmsurgen/
 
 # edit the two files and set values
-# note that URs will only be generated for users in the usermap file
 
 add lrms-ur-generator to cron.hourly
+
+# check /var/log/lrmsurgen.log after invokation
+# generated urs will be in /var/spool/usagerecords/ or a custom dir set with logdir
 
