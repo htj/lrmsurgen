@@ -60,9 +60,7 @@ def main():
     except Exception, e:
         logging.error('Got exception while generating usage records:')
         logging.exception(e)
-        print
-        raise
-    sys.exit(3)
+        sys.exit(3)
 
 
 if __name__ == '__main__':
