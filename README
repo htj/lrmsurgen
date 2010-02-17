@@ -19,6 +19,7 @@ add lrms-ur-generator to cron.hourly
 # check /var/log/lrmsurgen.log after invokation
 # generated urs will be in /var/spool/usagerecords/ or a custom dir set with logdir
 
+Make cron invoke lrms-ur-registrant hourly.
 
 
 Development:
