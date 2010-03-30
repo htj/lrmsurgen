@@ -107,7 +107,12 @@ def createUsageRecord(log_entry, hostname, usermap):
         r_class = r_class.split(':')[0]
 
     ur.queue = r_class
-    ur.node_count = int(log_entry[1]) or 1 # set to 1 if 0
+
+    nodes = int(log_entry[1]) or 1 # set to 1 if 0
+    hosts = log_entry[37].split(':')
+
+    ur.node_count = nodes * len(hosts) # I think this is right
+    ur.host = ','.join(hosts)
 
     ur.submit_time = usagerecord.epoch2isoTime(int(log_entry[8]))
     ur.start_time  = usagerecord.epoch2isoTime(int(log_entry[10]))
