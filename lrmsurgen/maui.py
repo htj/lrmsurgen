@@ -13,11 +13,6 @@ import logging
 
 from lrmsurgen import config, usagerecord
 
-try:
-    from xml.etree import ElementTree as ET
-except ImportError:
-    # Python 2.4 compatability
-    from elementtree import ElementTree as ET
 
 
 MAUI_DATE_FORMAT = '%a_%b_%d_%Y'
@@ -42,7 +37,6 @@ class MauiLogParser:
 
     def splitLineEntry(self, line):
         fields = [ e.strip() for e in line.split(' ') if e != '' ]
-        assert len(fields) == 44, 'Incorrect number of fields in Maui log entry'
         return fields
 
 
@@ -250,6 +244,12 @@ def generateUsageRecords(cfg, hostname, usermap):
 
             if log_entry is None:
                 break # no more log entries
+
+            if len(log_entry) != 44:
+                logging.error('Read entry with an invalid number fields:')
+                logging.error(' - File %s contains entry with %i fields. First field: %s' % (log_file, len(log_entry), log_entry[0]))
+                logging.error(' - No usage record will be generated from this line')
+                continue
 
             job_id = log_entry[0]
             if not shouldGenerateUR(log_entry, usermap):
