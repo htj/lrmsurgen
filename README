@@ -5,7 +5,7 @@ Program for generating usage records form LRMS information.
 Currently Maui is supported.
 
 
-Installation:
+== Installation ==
 
 python setup.py install
 
@@ -14,15 +14,16 @@ cp examples/* /etc/lrmsurgen/
 
 # edit the two files and set values
 
-add lrms-ur-generator to cron.hourly
+add lrms-ur-generator to cron.hourly (or add it to crontab, whatever you fancy)
 
 # check /var/log/lrmsurgen.log after invokation
-# generated urs will be in /var/spool/usagerecords/ or a custom dir set with logdir
+# generated urs will be in /var/spool/usagerecords/ or whatever logdir settign is
+# you can invoke lrms-ur-generator in the command line to check it as well (it will
+# still output to /var/log/lrmsurgen.log)
 
-Make cron invoke lrms-ur-registrant hourly.
 
 
-Development:
+==  Development ==
 
 Start by reading lrms-ur-generator to get a feel of the thing.
 
