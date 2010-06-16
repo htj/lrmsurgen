@@ -19,6 +19,7 @@ MAUI_DATE_FORMAT = '%a_%b_%d_%Y'
 DEFAULT_LOG_DIR  = '/var/spool/maui'
 STATS_DIR        = 'stats'
 STATE_FILE       = 'maui.state'
+MAUI_CFG_FILE    = 'maui.cfg'
 
 
 
@@ -70,9 +71,25 @@ class MauiLogParser:
                 break
 
 
+def getMauiServer(maui_spool_dir):
+
+    SERVERHOST = 'SERVERHOST'
+
+    maui_cfg_path = os.path.join(maui_spool_dir, MAUI_CFG_FILE)
+
+    if os.path.exists(maui_cfg_path):
+        for line in file(maui_cfg_path):
+            line = line.strip()
+            if line.startswith(SERVERHOST):
+                entry = line.replace(SERVERHOST,'').strip()
+                return entry
+
+    logging.warning('Could not get Maui server host setting')
+    return None
 
 
-def createUsageRecord(log_entry, hostname, usermap):
+
+def createUsageRecord(log_entry, hostname, usermap, maui_server_host):
     """
     Creates a Usage Record object given a Maui log entry.
     """
@@ -80,15 +97,21 @@ def createUsageRecord(log_entry, hostname, usermap):
 
     job_id    = log_entry[0]
     user_name = log_entry[3]
-    job_state = log_entry[6]
+
+    if job_id.isdigit() and maui_server_host is not None:
+        job_identifier = job_id + '.' + maui_server_host
+    else:
+        job_identifier = job_id
 
     if not user_name in usermap:
         logging.warning('Job %s: No mapping for username %s in user map.' % (job_id, user_name))
 
-    ur.record_id = job_id + '.' + hostname
+    fqdn_job_id = hostname + ':' + job_identifier
 
-    ur.local_job_id = job_id
-    ur.global_job_id = job_id + '.' + hostname
+    ur.record_id = fqdn_job_id
+
+    ur.local_job_id = job_identifier
+    ur.global_job_id = fqdn_job_id
 
     ur.local_user_id = user_name
     ur.global_user_name = usermap.get(user_name)
@@ -136,7 +159,7 @@ def shouldGenerateUR(log_entry, usermap):
         logging.info('Job %s: Skipping UR generation (state %s)' % (job_id, job_state))
         return False
     if user_name in usermap and usermap[user_name] is None:
-        logging.info('Jobs %s: User configured to skip UR generation' % job_id)
+        logging.info('Job %s: User configured to skip UR generation' % job_id)
         return False
 
     return True
@@ -219,7 +242,7 @@ def generateUsageRecords(cfg, hostname, usermap):
 
     maui_spool_dir = config.getConfigValue(cfg, config.SECTION_MAUI, config.MAUI_SPOOL_DIR,
                                            config.DEFAULT_MAUI_SPOOL_DIR)
-
+    maui_server_host = getMauiServer(maui_spool_dir)
     maui_date_today = getMauiDate(time.gmtime())
     job_id, maui_date = getGeneratorState(cfg)
     #print job_id, maui_date
@@ -256,7 +279,7 @@ def generateUsageRecords(cfg, hostname, usermap):
                 logging.debug('Job %s: No UR will be generated.' % job_id)
                 continue
 
-            ur = createUsageRecord(log_entry, hostname, usermap)
+            ur = createUsageRecord(log_entry, hostname, usermap, maui_server_host)
             log_dir = config.getConfigValue(cfg, config.SECTION_COMMON, config.LOGDIR, config.DEFAULT_LOG_DIR)
             ur_dir = os.path.join(log_dir, 'urs')
             if not os.path.exists(ur_dir):
