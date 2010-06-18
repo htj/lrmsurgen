@@ -1,0 +1,22 @@
+This document describes how to setup the LRMS UR Generator tool
+
+
+# The problem
+
+multiple places generates records and registeres thems
+this leads to double accounting
+we cannot only have lrms logging as the grid middleware has much more information
+
+
+# How the duplicate detection works.
+
+we want grid records to overwrite lrms records as they have more information.
+
+the duplicate detection is done in postgres database (not supported in the CouchDB backend)
+
+
+# What must be set
+
+the hostname setting must be identical, so all records are registered with the same machine name.
+
+
