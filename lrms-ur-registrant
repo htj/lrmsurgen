@@ -43,7 +43,7 @@ CONFIG_SECTION_LOGGER  = 'logger'
 CONFIG_HOSTKEY         = 'x509_user_key'
 CONFIG_HOSTCERT        = 'x509_user_cert'
 CONFIG_CERTDIR         = 'x509_cert_dir'
-CONFIG_LOG_DIR         = 'log_dir'
+CONFIG_LOG_DIR         = 'logdir'
 CONFIG_LOG_ALL         = 'log_all'
 CONFIG_LOG_VO          = 'log_vo'
 CONFIG_UR_LIFETIME     = 'ur_lifetime'
@@ -548,7 +548,7 @@ def doMain():
     # read config
     cfg = getConfig(cfg_file)
 
-    log_dir = getConfigOption(cfg, CONFIG_SECTION_LOGGER, CONFIG_LOG_DIR, DEFAULT_LOG_DIR)
+    log_dir = getConfigOption(cfg, CONFIG_SECTION_COMMON, CONFIG_LOG_DIR, DEFAULT_LOG_DIR)
 
     las = getConfigOption(cfg, CONFIG_SECTION_LOGGER, CONFIG_LOG_ALL)
     lvo = getConfigOption(cfg, CONFIG_SECTION_LOGGER, CONFIG_LOG_VO)
