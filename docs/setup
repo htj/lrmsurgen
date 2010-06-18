@@ -1,0 +1,45 @@
+This document describes how to setup the LRMS UR Generator tool.
+
+The tool consists of two programs/scripts:
+
+lrms-ur-generator  : Creates usage records by parsing LRMS logs.
+lrms-ur-registrant : Registers usage records to SGAS.
+
+Both programs should be invoked regularly by CRON or similar. None of the
+programs are daemons.
+
+
+== Requirements ==
+
+* Python 2.4 or later
+* Twisted Core and Web (http://twistedmatrix.com/)
+* PyOpenSSL (https://launchpad.net/pyopenssl)
+
+Typical package names: python-twisted python-twisted-web python-openssl
+
+
+== Installation ==
+
+$ sudo python setup.py install
+$ mkdir /etc/lrmsurgen/
+$ cp examples/* /etc/lrmsurgen/
+
+Edit the two configuration files and set value accordingly
+
+Add lrms-ur-generator to cron.hourly / crontab
+The scripts does not need to run hourly, it is just recommended.
+
+The lrms-ur-generator tool can also be invoked manually to test it (note that
+it will still write to the logfile).
+
+Check /var/log/lrmsurgen.log after invokation
+Generated urs will be in /var/spool/usagerecords/ (or a custom logdir setting)
+
+Having verified that the logger work, add lrms-ur-registrant to cron.hourly / crontab.
+
+The programs does not need to run as root as such, however:
+lrms-ur-generator  : requires read access to the maui workload traces.
+lrms-ur-registrant : requires read access to host key and certificate
+If running as another user the spool directory will probably have to created
+manually.
+

@@ -1,34 +1,10 @@
 LRMS UR Generator.
 
-Program for generating usage records form LRMS information.
+Tool for generating usage records from LRMS logs and registering the records to
+SGAS.
 
-Currently Maui is supported.
-
-
-== Installation ==
-
-python setup.py install
-
-mkdir /etc/lrmsurgen/
-cp examples/* /etc/lrmsurgen/
-
-# edit the two files and set values
-
-add lrms-ur-generator to cron.hourly (or add it to crontab, whatever you fancy)
-
-# check /var/log/lrmsurgen.log after invokation
-# generated urs will be in /var/spool/usagerecords/ or whatever logdir settign is
-# you can invoke lrms-ur-generator in the command line to check it as well (it will
-# still output to /var/log/lrmsurgen.log)
+Currently Maui is the only supported LRMS.
 
 
-
-==  Development ==
-
-Start by reading lrms-ur-generator to get a feel of the thing.
-
-See lrmsurgen/maui.py for how the maui generation was done.
-
-See lrmsurgen/usagerecord.py for UR generation details.
-UR generation example can be seen in lrmsurgen/maui.py
+For installation instructions, see docs/setup
 
