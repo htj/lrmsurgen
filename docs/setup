@@ -21,19 +21,19 @@ Typical package names: python-twisted python-twisted-web python-openssl
 == Installation ==
 
 $ sudo python setup.py install
-$ mkdir /etc/lrmsurgen/
-$ cp examples/* /etc/lrmsurgen/
 
-Edit the two configuration files and set value accordingly
+Edit the configuration files in /etc/lrmsurgen (or relative to your root if you
+set a root).
+
 
 Add lrms-ur-generator to cron.hourly / crontab
-The scripts does not need to run hourly, it is just recommended.
+(daily is also possible)
 
 The lrms-ur-generator tool can also be invoked manually to test it (note that
 it will still write to the logfile).
 
 Check /var/log/lrmsurgen.log after invokation
-Generated urs will be in /var/spool/usagerecords/ (or a custom logdir setting)
+Generated urs will be in /var/spool/lrmsurgen/usagerecords/ (or where configured)
 
 Having verified that the logger work, add lrms-ur-registrant to cron.hourly / crontab.
 
