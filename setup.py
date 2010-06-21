@@ -3,7 +3,7 @@ from distutils.core import setup
 import time
 
 gmt = time.gmtime()
-version = 'git-%i%i%i' % (gmt.tm_year, gmt.tm_mon, gmt.tm_mday)
+version = 'git-%04d%02d%02d' % (gmt.tm_year, gmt.tm_mon, gmt.tm_mday)
 
 setup(name='lrmsurgen',
       version=version,
