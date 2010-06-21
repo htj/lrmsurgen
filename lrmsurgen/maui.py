@@ -89,7 +89,7 @@ def getMauiServer(maui_spool_dir):
 
 
 
-def createUsageRecord(log_entry, hostname, usermap, maui_server_host):
+def createUsageRecord(log_entry, hostname, user_map, project_map, maui_server_host):
     """
     Creates a Usage Record object given a Maui log entry.
     """
@@ -103,7 +103,7 @@ def createUsageRecord(log_entry, hostname, usermap, maui_server_host):
     else:
         job_identifier = job_id
 
-    if not user_name in usermap:
+    if not user_name in user_map:
         logging.warning('Job %s: No mapping for username %s in user map.' % (job_id, user_name))
 
     fqdn_job_id = hostname + ':' + job_identifier
@@ -114,7 +114,7 @@ def createUsageRecord(log_entry, hostname, usermap, maui_server_host):
     ur.global_job_id = fqdn_job_id
 
     ur.local_user_id = user_name
-    ur.global_user_name = usermap.get(user_name)
+    ur.global_user_name = user_map.get(user_name)
 
     ur.machine_name = hostname
 
@@ -142,11 +142,18 @@ def createUsageRecord(log_entry, hostname, usermap, maui_server_host):
     if acc_name != '[NONE]':
         ur.project_name = acc_name
 
+        mapped_project = project_map.get(acc_name)
+        if mapped_project is not None:
+            voi = usagerecord.VOInformation()
+            voi.type = 'lrmsurgen-projectmap'
+            voi.name = mapped_project
+            ur.vo_info.append(voi)
+
     return ur
 
 
 
-def shouldGenerateUR(log_entry, usermap):
+def shouldGenerateUR(log_entry, user_map):
     """
     Decides wheater a log entry is 'suitable' for generating
     a ur from.
@@ -158,7 +165,7 @@ def shouldGenerateUR(log_entry, usermap):
     if not job_state == 'Completed':
         logging.info('Job %s: Skipping UR generation (state %s)' % (job_id, job_state))
         return False
-    if user_name in usermap and usermap[user_name] is None:
+    if user_name in user_map and user_map[user_name] is None:
         logging.info('Job %s: User configured to skip UR generation' % job_id)
         return False
 
@@ -235,7 +242,7 @@ def writeGeneratorState(cfg, job_id, maui_log_file):
 
 
 
-def generateUsageRecords(cfg, hostname, usermap):
+def generateUsageRecords(cfg, hostname, user_map, project_map):
     """
     Starts the UR generation process.
     """
@@ -258,7 +265,7 @@ def generateUsageRecords(cfg, hostname, usermap):
 
             try:
                 log_entry = mlp.getNextLogEntry()
-            except IOError, e:
+            except IOError:
                 if maui_date == maui_date_today: # todays entry might not exist yet
                     #logging.info('Error opening log file for today')
                     break
@@ -275,11 +282,11 @@ def generateUsageRecords(cfg, hostname, usermap):
                 continue
 
             job_id = log_entry[0]
-            if not shouldGenerateUR(log_entry, usermap):
+            if not shouldGenerateUR(log_entry, user_map):
                 logging.debug('Job %s: No UR will be generated.' % job_id)
                 continue
 
-            ur = createUsageRecord(log_entry, hostname, usermap, maui_server_host)
+            ur = createUsageRecord(log_entry, hostname, user_map, project_map, maui_server_host)
             log_dir = config.getConfigValue(cfg, config.SECTION_COMMON, config.LOGDIR, config.DEFAULT_LOG_DIR)
             ur_dir = os.path.join(log_dir, 'urs')
             if not os.path.exists(ur_dir):

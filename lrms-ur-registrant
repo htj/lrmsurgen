@@ -269,7 +269,7 @@ def createRegistrationPointsMapping(logdir, logpoints_all, logpoints_vo):
 
         try:
             ur = ET.parse(filepath)
-        except Exception, e:
+        except Exception:
             log.msg('Error parsing file %(filepath)s, continuing' % {'filepath' : filepath})
             continue
 
@@ -450,7 +450,7 @@ def _performURRegistration(regmap, urmap, logdir, ctxFactory, batch_size):
                 continue
             try:
                 batch_sets[ep].append(filename)
-            except KeyError, e:
+            except KeyError:
                 pass # deferring registration as service is not available
 
     # build up registraion batches (list of (ep, filenames) tuples)

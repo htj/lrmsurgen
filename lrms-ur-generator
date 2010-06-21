@@ -40,15 +40,22 @@ def main():
         import socket
         hostname = socket.getfqdn()
 
-    usermap_file = config.getConfigValue(cfg, config.SECTION_COMMON, config.USERMAP, config.DEFAULT_USERMAP_FILE)
+    user_map_file = config.getConfigValue(cfg, config.SECTION_COMMON, config.USERMAP, config.DEFAULT_USERMAP_FILE)
+    project_map_file = config.getConfigValue(cfg, config.SECTION_COMMON, config.PROJECTMAP, config.DEFAULT_PROJECTMAP_FILE)
 
-    # basic configuration done, read usermap and start lrms ur module
+    # basic configuration done, read usermap+projectmap and start lrms ur module
 
     try:
-        usermap = config.getUserMap(usermap_file)
+        user_map = config.getUserMap(user_map_file)
     except IOError:
-        logging.error('IOError while attempting to read usermap at %s (missing file?)' % usermap_file)
-        sys.exit(2)
+        logging.error('IOError while attempting to read user map at %s (missing file?)' % user_map_file)
+        user_map = {}
+
+    try:
+        project_map = config.getProjectMap(project_map_file)
+    except IOError:
+        logging.error('IOError while attempting to read project map at %s (missing file?)' % user_map_file)
+        project_map = {}
 
     sections = cfg.sections()
     if config.SECTION_MAUI in sections:
@@ -56,7 +63,7 @@ def main():
     # more LRMSes to come...
 
     try:
-        lrms.generateUsageRecords(cfg, hostname, usermap)
+        lrms.generateUsageRecords(cfg, hostname, user_map, project_map)
     except Exception, e:
         logging.error('Got exception while generating usage records:')
         logging.exception(e)

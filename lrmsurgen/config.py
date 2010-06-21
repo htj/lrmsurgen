@@ -10,26 +10,28 @@ import re
 import ConfigParser
 from optparse import OptionParser
 
-DEFAULT_CONFIG_FILE    = '/etc/lrmsurgen/lrmsurgen.conf'
-DEFAULT_USERMAP_FILE   = '/etc/lrmsurgen/usermap'
-DEFAULT_LOG_DIR        = '/var/spool/usagerecords'
-DEFAULT_LOG_FILE       = '/var/log/lrmsurgen.log'
-DEFAULT_STATEDIR       = '/var/spool/lrmsurgen'
-DEFAULT_MAUI_SPOOL_DIR = '/var/spool/maui'
+DEFAULT_CONFIG_FILE     = '/etc/lrmsurgen/lrmsurgen.conf'
+DEFAULT_USERMAP_FILE    = '/etc/lrmsurgen/usermap'
+DEFAULT_PROJECTMAP_FILE = '/etc/lrmsurgen/projectmap'
+DEFAULT_LOG_FILE        = '/var/log/lrmsurgen.log'
+DEFAULT_LOG_DIR         = '/var/spool/lrmsurgen/usagerecords'
+DEFAULT_STATEDIR        = '/var/spool/lrmsurgen'
+DEFAULT_MAUI_SPOOL_DIR  = '/var/spool/maui'
 
 SECTION_COMMON = 'common'
-SECTION_MAUI    = 'maui'
+SECTION_MAUI   = 'maui'
 
-HOSTNAME = 'hostname'
-USERMAP  = 'usermap'
-LOGDIR   = 'logdir'
-LOGFILE  = 'logfile'
-STATEDIR = 'statedir'
+HOSTNAME   = 'hostname'
+USERMAP    = 'usermap'
+PROJECTMAP = 'projectmap'
+LOGDIR     = 'logdir'
+LOGFILE    = 'logfile'
+STATEDIR   = 'statedir'
 
 MAUI_SPOOL_DIR  = 'spooldir'
 
 
-# redularr expression for matching usermap lines
+# regular expression for matching usermap/projectmap lines
 rx = re.compile('''\s*(.*)\s*"(.*)"''')
 
 
@@ -60,23 +62,35 @@ def getConfigValue(cfg, section, value, default=None):
         return default
 
 
-def getUserMap(usermap_file):
+def readFileMap(map_file):
 
-    usermap = {}
+    map_ = {}
 
-    for line in open(usermap_file).readlines():
+    for line in open(map_file).readlines():
         line = line.strip()
         if not line or line.startswith('#'):
             continue
         m = rx.match(line)
         if not m:
             continue
-        local_user, user_dn = m.groups()
-        local_user = local_user.strip()
-        user_dn    = user_dn.strip()
-        if user_dn == '-':
-            user_dn = None
-        usermap[local_user] = user_dn
+        key, mapped_value = m.groups()
+        key = key.strip()
+        mapped_value = mapped_value.strip()
+        if mapped_value == '-':
+            mapped_value = None
+        map_[key] = mapped_value
 
-    return usermap
+    return map_
+
+
+def getUserMap(user_map_file):
+
+    user_map = readFileMap(user_map_file)
+    return user_map
+
+
+def getProjectMap(project_map_file):
+
+    project_map = readFileMap(project_map_file)
+    return project_map
 

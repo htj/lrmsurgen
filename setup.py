@@ -12,7 +12,6 @@ setup(name='lrmsurgen',
       author_email='htj@ndgf.org',
       url='http://www.ndgf.org/',
       packages=['lrmsurgen'],
-      package_data={'examples': ['examples/*']},
       scripts = ['lrms-ur-generator', 'lrms-ur-registrant']
 )
 
