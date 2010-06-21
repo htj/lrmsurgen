@@ -1,22 +1,67 @@
-This document describes how to setup the LRMS UR Generator tool
+This document describes how to setup the LRMS UR Generator tool alongside the
+ARC UR Logger. It is not a difficult thing to do, but it is highly recommended
+to understand the problem first.
 
 
-# The problem
+== The Problem ==
 
-multiple places generates records and registeres thems
-this leads to double accounting
-we cannot only have lrms logging as the grid middleware has much more information
-
-
-# How the duplicate detection works.
-
-we want grid records to overwrite lrms records as they have more information.
-
-the duplicate detection is done in postgres database (not supported in the CouchDB backend)
+When both the LRMS UR Generator and ARC UR Logger are both deployed at the same
+site, they will most likely both generate usage records for the same job, and
+register them. If not handled properly, this will cause double accounting for
+the same job. However "just" having LRMS logging is insuficient as a lot of
+information is not available at LRMS level (e.g., grid identity, vo
+information).
 
 
-# What must be set
+== Duplicate Detection ==
 
-the hostname setting must be identical, so all records are registered with the same machine name.
+The duplicate detection and record overwriting is done within the SGAS
+database. However the loggers must be configured such that SGAS can do the
+duplicate detection.
 
+The duplicate detection is done solely via the recordId field in the usage
+records. The recordId field is composed by the host FQDN and LRMS job
+identifier appended together. E.g.,: "benedict.grid.aau.dk:483775.mother".
+Furthermore grid usage records will overwrite LRMS usage records, as the grid
+records contain more information. This is done by looking at the GlobalJobId
+field, but the details are not important.
+
+Note that duplicate detection and overwrite is only supported in the SGAS
+PostgreSQL backend. The CouchDB backend only does regular duplicate detection
+(i.e, grid records will not overwrite LRMS records, if the LRMS record came
+first).
+
+
+== Configuration ==
+
+So, in order for the duplicate detection to work the host FQDN used at the
+different loggers must be the same. If your setup only have a single frontend
+machine for submitting jobs, configuration will typically not be required.
+
+However if you have multiple frontend machines, you must configure the ARC UR
+Logger and the LRMS UR Generator, such that the records are produced with
+identical hostnames. E.g., if you have a setup with an ARC frontend at the host
+arc.mysite.example.org, and an LRMS frontend at lrms.mysite.example.org, you
+should configure the to loggers such that they use the same FQDN, e.g.,
+mysite.example.org. This configuration is explained in the next:
+
+ARC UR Logger:
+Set the hostname setting in the [logger] section in arc.conf, e.g.,:
+---
+[logger]
+hostname="mysite.example.org"
+---
+
+LRMS UR Logger:
+
+Set the hostname setting in the [common] section in lrmsurgen.conf (typically
+located /etc/lrmsurgen/lrmsurgen.conf), e.g.,:
+---
+[common]
+hostname=benedict.grid.aau.dk
+---
+
+Setting these values, will also mean that the logged machine name will be the
+same for the records (so the accounting data will make sense when looking at
+aggregated values).
 
