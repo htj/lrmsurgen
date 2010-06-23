@@ -93,20 +93,64 @@ def createUsageRecord(log_entry, hostname, user_map, project_map, maui_server_ho
     """
     Creates a Usage Record object given a Maui log entry.
     """
-    ur = usagerecord.UsageRecord()
 
-    job_id    = log_entry[0]
-    user_name = log_entry[3]
+    # extract data from the workload trace (log_entry)
+
+    job_id       = log_entry[0]
+    user_name    = log_entry[3]
+    req_class    = log_entry[7]
+    submit_time  = int(log_entry[8])
+    start_time   = int(log_entry[10])
+    end_time     = int(log_entry[11])
+    alo_tasks    = int(log_entry[21])
+    account_name = log_entry[25]
+    utilized_cpu = float(log_entry[29])
+    hosts        = log_entry[37].split(':')
+
+    # clean data and create various composite entries from the work load trace
 
     if job_id.isdigit() and maui_server_host is not None:
         job_identifier = job_id + '.' + maui_server_host
     else:
         job_identifier = job_id
+    fqdn_job_id = hostname + ':' + job_identifier
 
     if not user_name in user_map:
         logging.warning('Job %s: No mapping for username %s in user map.' % (job_id, user_name))
 
-    fqdn_job_id = hostname + ':' + job_identifier
+    queue = req_class.replace('[','').replace(']','')
+    if ':' in queue:
+        queue = queue.split(':')[0]
+
+    if account_name == '[NONE]':
+        account_name = None
+
+    vo_info = []
+    if account_name is not None:
+        mapped_project = project_map.get(account_name)
+        if mapped_project is not None:
+            voi = usagerecord.VOInformation()
+            voi.type = 'lrmsurgen-projectmap'
+            voi.name = mapped_project
+
+    wall_time = end_time - start_time
+
+    # okay, this is somewhat ridiculous and complicated:
+    # When compiled on linux, maui will think that it will only get cputime reading
+    # from the master node. To compensate for this it multiples the utilized cpu field
+    # with the number of tasks. However on most newer torque installations the correct
+    # cpu utilization is reported. When combined this creates abnormally high cpu time
+    # values for parallel jobs. The following heuristic tries to compensate for this,
+    # by checking if the cpu time is higher than wall_time * cpus (which is never should)
+    # be, and then correct the number. However this will not work for jobs with very
+    # low efficiancy
+
+    if utilized_cpu > wall_time * alo_tasks:
+        utilized_cpu /= alo_tasks
+
+    ## fill in usage record fields
+
+    ur = usagerecord.UsageRecord()
 
     ur.record_id = fqdn_job_id
 
@@ -117,37 +161,20 @@ def createUsageRecord(log_entry, hostname, user_map, project_map, maui_server_ho
     ur.global_user_name = user_map.get(user_name)
 
     ur.machine_name = hostname
+    ur.queue = queue
 
-    r_class = log_entry[7]
-    r_class = r_class.replace('[','').replace(']','')
-    if ':' in r_class:
-        r_class = r_class.split(':')[0]
-
-    ur.queue = r_class
-
-    nodes = int(log_entry[1]) or 1 # set to 1 if 0
-    hosts = log_entry[37].split(':')
-
-    ur.node_count = nodes * len(hosts) # I think this is right
+    ur.node_count = alo_tasks
     ur.host = ','.join(hosts)
 
-    ur.submit_time = usagerecord.epoch2isoTime(int(log_entry[8]))
-    ur.start_time  = usagerecord.epoch2isoTime(int(log_entry[10]))
-    ur.end_time    = usagerecord.epoch2isoTime(int(log_entry[11]))
+    ur.submit_time = usagerecord.epoch2isoTime(submit_time)
+    ur.start_time  = usagerecord.epoch2isoTime(start_time)
+    ur.end_time    = usagerecord.epoch2isoTime(end_time)
 
-    ur.cpu_duration = float(log_entry[29])
-    ur.wall_duration = float(log_entry[11]) - float(log_entry[10])
+    ur.cpu_duration = utilized_cpu
+    ur.wall_duration = wall_time
 
-    acc_name = log_entry[25]
-    if acc_name != '[NONE]':
-        ur.project_name = acc_name
-
-        mapped_project = project_map.get(acc_name)
-        if mapped_project is not None:
-            voi = usagerecord.VOInformation()
-            voi.type = 'lrmsurgen-projectmap'
-            voi.name = mapped_project
-            ur.vo_info.append(voi)
+    ur.project_name = account_name
+    ur.vo_info += vo_info
 
     return ur
 
