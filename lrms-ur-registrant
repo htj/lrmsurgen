@@ -56,7 +56,7 @@ DEFAULT_CONFIG_FILE    = '/etc/lrmsurgen/lrmsurgen.conf'
 DEFAULT_HOSTKEY      = '/etc/grid-security/hostkey.pem'
 DEFAULT_HOSTCERT     = '/etc/grid-security/hostcert.pem'
 DEFAULT_CERTDIR      = '/etc/grid-security/certificates'
-DEFAULT_LOG_DIR      = '/var/spool/usagerecords/'
+DEFAULT_LOG_DIR      = '/var/spool/lrmsurgen/usagerecords/'
 DEFAULT_BATCH_SIZE   = 100
 DEFAULT_UR_LIFETIME  = 30 # days
 
