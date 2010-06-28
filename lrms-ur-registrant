@@ -26,7 +26,7 @@ except ImportError:
 from OpenSSL import SSL
 
 from twisted.internet import reactor, defer
-from twisted.python import log, usage
+from twisted.python import log, usage, failure
 from twisted.web import client
 
 
@@ -220,7 +220,7 @@ def parseLogVO(value):
 
     pairs = value.split(',')
     for pair in pairs:
-        vo_name, url = pair.split(' ',2)
+        vo_name, url = pair.strip().split(' ',2) 
         vo_regs[vo_name] = url
     return vo_regs
 
@@ -391,12 +391,13 @@ def joinUsageRecordFiles(logdir, filenames):
 def registerBatch(ep, url, logdir, filenames, ctxFactory):
 
     def insertDone(result):
-        log.msg("%i records registered" % len(filenames))
+        log.msg("%i records registered to %s" % (len(filenames), ep))
         for fn in filenames:
             StateFile(logdir, fn).add(ep).write()
 
     def insertError(error):
         log.msg("Error during batch insertion: %s" % error.getErrorMessage())
+        return error
 
     ur_data = joinUsageRecordFiles(logdir, filenames)
 
@@ -440,28 +441,55 @@ def _performURRegistration(regmap, urmap, logdir, ctxFactory, batch_size):
 
     log.msg("Starting registration")
 
+    skipped_registrations = {}
+
     # new registration logic (batching)
     for filename, endpoints in urmap.items():
 
         state = StateFile(logdir, filename)
         for ep in endpoints:
             if ep in state:
-                log.msg("Already registered UR to endpoint, skipping")
+                skipped_registrations[ep] = skipped_registrations.get(ep, 0) + 1
                 continue
             try:
                 batch_sets[ep].append(filename)
             except KeyError:
                 pass # deferring registration as service is not available
 
+    for ep, ur_registered in skipped_registrations.items():
+        log.msg("Skipping %i registrations to %s, records already registered" % (ur_registered, ep))
+
     # build up registraion batches (list of (ep, filenames) tuples)
     registrations = []
     for ep, filenames in batch_sets.items():
         registrations += [ (ep, filenames[i:i+batch_size]) for i in range(0, len(filenames), batch_size) ]
 
-    sem = defer.DeferredSemaphore(1)
-    defs = [sem.run(registerBatch, ep, regmap[ep], logdir, fns, ctxFactory) for ep,fns in registrations ]
-    return defer.DeferredList(defs)
+    registration_deferred = defer.Deferred()
 
+    error_endpoints = {}
+
+    def doBatch(result, used_service_endpoint):
+        if isinstance(result, failure.Failure):
+            # something went wrong in the registration - stop future registrations
+            # split into to 2 lines (far easier to read in the log)
+            log.msg("Error registration records to %s" % used_service_endpoint)
+            log.msg("Skipping all registrations to this endpoint for now")
+            error_endpoints[used_service_endpoint] = True
+
+        try:
+            service_endpoint, filenames = registrations.pop(0)
+            while service_endpoint in error_endpoints:
+                service_endpoint, filenames = registrations.pop(0)
+
+            d = registerBatch(service_endpoint, regmap[service_endpoint], logdir, filenames, ctxFactory)
+            d.addBoth(doBatch, service_endpoint)
+        except IndexError:
+            # no more registrations
+            registration_deferred.callback(None)
+
+    doBatch(None, None)
+
+    return registration_deferred
 
 
 def archiveUsageRecords(logdir, urmap):
@@ -544,7 +572,7 @@ def doMain():
         cfg_file = DEFAULT_CONFIG_FILE
 
 
-    log.msg('Using %s as config file' % cfg_file)
+    #log.msg('Using %s as config file' % cfg_file)
     # read config
     cfg = getConfig(cfg_file)
 
@@ -565,9 +593,9 @@ def doMain():
     log.msg(' Log dir: %s' % log_dir)
     log.msg(' Log all: %s' % log_all)
     log.msg(' Log vo : %s' % log_vo)
-    log.msg(' Host key  : %s' % host_key)
-    log.msg(' Host cert : %s' % host_cert)
-    log.msg(' Cert dir  : %s' % cert_dir)
+    #log.msg(' Host key  : %s' % host_key)
+    #log.msg(' Host cert : %s' % host_cert)
+    #log.msg(' Cert dir  : %s' % cert_dir)
 
     if not (log_all or log_vo):
         log.msg('No log points given. Cowardly refusing to do anything')
