@@ -89,7 +89,7 @@ def getMauiServer(maui_spool_dir):
 
 
 
-def createUsageRecord(log_entry, hostname, user_map, project_map, maui_server_host):
+def createUsageRecord(log_entry, hostname, user_map, project_map, maui_server_host, missing_user_mappings):
     """
     Creates a Usage Record object given a Maui log entry.
     """
@@ -116,7 +116,7 @@ def createUsageRecord(log_entry, hostname, user_map, project_map, maui_server_ho
     fqdn_job_id = hostname + ':' + job_identifier
 
     if not user_name in user_map:
-        logging.warning('Job %s: No mapping for username %s in user map.' % (job_id, user_name))
+        missing_user_mappings[user_name] = True
 
     queue = req_class.replace('[','').replace(']','')
     if ':' in queue:
@@ -281,6 +281,8 @@ def generateUsageRecords(cfg, hostname, user_map, project_map):
     job_id, maui_date = getGeneratorState(cfg)
     #print job_id, maui_date
 
+    missing_user_mappings = {}
+
     while True:
 
         log_file = os.path.join(maui_spool_dir, STATS_DIR, maui_date)
@@ -313,7 +315,7 @@ def generateUsageRecords(cfg, hostname, user_map, project_map):
                 logging.debug('Job %s: No UR will be generated.' % job_id)
                 continue
 
-            ur = createUsageRecord(log_entry, hostname, user_map, project_map, maui_server_host)
+            ur = createUsageRecord(log_entry, hostname, user_map, project_map, maui_server_host, missing_user_mappings)
             log_dir = config.getConfigValue(cfg, config.SECTION_COMMON, config.LOGDIR, config.DEFAULT_LOG_DIR)
             ur_dir = os.path.join(log_dir, 'urs')
             if not os.path.exists(ur_dir):
@@ -332,7 +334,7 @@ def generateUsageRecords(cfg, hostname, user_map, project_map):
         maui_date = getIncrementalMauiDate(maui_date)
         job_id = None
 
-    #print job_id, maui_date
-    #writeGeneratorState(cfg, job_id, maui_date)
-
+    if missing_user_mappings:
+        users = ','.join(missing_user_mappings)
+        logging.info('Missing user mapping for the following users: %s' % users)
 

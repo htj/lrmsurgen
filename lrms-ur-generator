@@ -10,9 +10,11 @@
 import os
 import sys
 import logging
-import datetime
 
 from lrmsurgen import config
+
+
+LOG_FORMAT         = "%(asctime)s [%(levelname)s] %(message)s"
 
 
 
@@ -32,8 +34,7 @@ def main():
     if logfile is None:
         logfile = config.getConfigValue(cfg, config.SECTION_COMMON, config.LOGFILE, config.DEFAULT_LOG_FILE)
 
-    logging.basicConfig(filename=logfile, level=logging.DEBUG)
-    logging.debug('=== LRMS UR Generator started. Time: %s ===' % str(datetime.datetime.now()))
+    logging.basicConfig(filename=logfile, format=LOG_FORMAT, level=logging.DEBUG)
 
     hostname = config.getConfigValue(cfg, config.SECTION_COMMON, config.HOSTNAME)
     if hostname is None:
