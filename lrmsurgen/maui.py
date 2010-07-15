@@ -163,7 +163,8 @@ def createUsageRecord(log_entry, hostname, user_map, project_map, maui_server_ho
     ur.machine_name = hostname
     ur.queue = queue
 
-    ur.node_count = alo_tasks
+    ur.processors = alo_tasks
+    ur.node_count = len(hosts)
     ur.host = ','.join(hosts)
 
     ur.submit_time = usagerecord.epoch2isoTime(submit_time)

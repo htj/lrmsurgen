@@ -46,6 +46,7 @@ CHARGE               = ET.QName("{%s}Charge"         % OGF_UR_NAMESPACE)
 WALL_DURATION        = ET.QName("{%s}WallDuration"   % OGF_UR_NAMESPACE)
 CPU_DURATION         = ET.QName("{%s}CpuDuration"    % OGF_UR_NAMESPACE)
 NODE_COUNT           = ET.QName("{%s}NodeCount"      % OGF_UR_NAMESPACE)
+PROCESSORS           = ET.QName("{%s}Processors"     % OGF_UR_NAMESPACE)
 START_TIME           = ET.QName("{%s}StartTime"      % OGF_UR_NAMESPACE)
 END_TIME             = ET.QName("{%s}EndTime"        % OGF_UR_NAMESPACE)
 PROJECT_NAME         = ET.QName("{%s}ProjectName"    % OGF_UR_NAMESPACE)
@@ -111,6 +112,7 @@ class UsageRecord:
         self.queue              = None
         self.host               = None
         self.node_count         = None
+        self.processors         = None
         self.submit_time        = None
         self.end_time           = None
         self.start_time         = None
@@ -187,6 +189,7 @@ class UsageRecord:
         if self.queue          is not None :  setElement(ur, QUEUE, self.queue)
         if self.host           is not None :  setElement(ur, HOST, self.host)
         if self.node_count     is not None :  setElement(ur, NODE_COUNT, self.node_count)
+        if self.processors     is not None :  setElement(ur, PROCESSORS, self.processors)
         if self.submit_host    is not None :  setElement(ur, SUBMIT_HOST, self.submit_host)
         if self.project_name   is not None :  setElement(ur, PROJECT_NAME, self.project_name)
         if self.submit_time    is not None :  setElement(ur, SUBMIT_TIME, self.submit_time)
