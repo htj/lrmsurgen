@@ -15,6 +15,7 @@ Copyright: Nordic Data Grid Facility (2009)
 import sys
 import os
 import time
+import urlparse
 import ConfigParser
 
 try:
@@ -324,7 +325,20 @@ def httpRequest(url, method='GET', payload=None, ctxFactory=None):
 
 def createEPRegistrationMapping(endpoints, ctxFactory):
 
-    def gotReply(result, factory):
+    def createRegistrationURL(location, endpoint):
+        if location.startswith('http'):
+            # location is a complete url, so we just return it
+            return location
+        elif location.startswith('/'):
+            # location is a path, and must be merged with base endpoint to form a suitable url
+            url = urlparse.urlparse(endpoint)
+            reg_url = url[0] + '://' + url[1] + location
+            return reg_url
+        else:
+            raise ValueError('Invalid registration point returned by %s (got: %s)' % (endpoint, location))
+
+
+    def gotReply(result, factory, endpoint):
 
         tree = ET.fromstring(result)
         for service in tree:
@@ -334,7 +348,8 @@ def createEPRegistrationMapping(endpoints, ctxFactory):
                     if ele.tag == 'name' and ele.text == 'Registration':
                         found_service = True
                     elif ele.tag == 'href' and found_service == True:
-                        return ele.text
+                        location = ele.text
+                        return createRegistrationURL(location, endpoint)
         return None # no registration service found
 
     def mergeResults(results, endpoints):
@@ -343,7 +358,7 @@ def createEPRegistrationMapping(endpoints, ctxFactory):
             if success and result is not None:
                 regmap[ep] = result
             elif success:
-                log.msg('Endpoint %s does not appear to have a registration service.')
+                log.msg('Endpoint %s does not appear to have a registration service.' % ep)
             else:
                 log.msg('Error contacting service %s (%s)' % (ep, result.getErrorMessage()))
         return regmap
@@ -351,7 +366,7 @@ def createEPRegistrationMapping(endpoints, ctxFactory):
     defs = []
     for ep in endpoints:
         d, f = httpRequest(ep, ctxFactory=ctxFactory)
-        d.addCallback(gotReply, f)
+        d.addCallback(gotReply, f, ep)
         defs.append(d)
 
     dl = defer.DeferredList(defs, consumeErrors=1) # otherwise we'll get complaints
