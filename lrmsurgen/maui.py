@@ -105,6 +105,7 @@ def createUsageRecord(log_entry, hostname, user_map, project_map, maui_server_ho
     alo_tasks    = int(log_entry[21])
     account_name = log_entry[25]
     utilized_cpu = float(log_entry[29])
+    core_count   = int(log_entry[31])*alo_tasks
     hosts        = log_entry[37].split(':')
 
     # clean data and create various composite entries from the work load trace
@@ -163,7 +164,7 @@ def createUsageRecord(log_entry, hostname, user_map, project_map, maui_server_ho
     ur.machine_name = hostname
     ur.queue = queue
 
-    ur.processors = alo_tasks
+    ur.processors = core_count
     ur.node_count = len(hosts)
     ur.host = ','.join(hosts)
 
