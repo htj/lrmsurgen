@@ -141,8 +141,8 @@ def createUsageRecord(log_entry, hostname, user_map, project_map, maui_server_ho
     # with the number of tasks. However on most newer torque installations the correct
     # cpu utilization is reported. When combined this creates abnormally high cpu time
     # values for parallel jobs. The following heuristic tries to compensate for this,
-    # by checking if the cpu time is higher than wall_time * cpus (which is never should)
-    # be, and then correct the number. However this will not work for jobs with very
+    # by checking if the cpu time is higher than wall_time * cpus (which it never should
+    # be), and then correct the number. However this will not work for jobs with very
     # low efficiancy
 
     if utilized_cpu > wall_time * alo_tasks:
