@@ -61,6 +61,8 @@ def main():
     sections = cfg.sections()
     if config.SECTION_MAUI in sections:
         from lrmsurgen import maui as lrms
+    elif config.SECTION_TORQUE in sections:
+        from lrmsurgen import torque as lrms
     # more LRMSes to come...
 
     try:

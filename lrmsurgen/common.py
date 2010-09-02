@@ -12,25 +12,19 @@ import datetime
 
 from lrmsurgen import config
 
-def getDate(gmtime, format_str):
-    """
-    Returns a date given a time.gmtime object and a format string.
-    """
-    return time.strftime(format_str, gmtime)
 
 
-def getIncrementalDate(date, format_str):
+def getIncrementalDate(date, DATE_FORMAT):
     """
     Returns the following day in date format given as argument, given a date
     in that date format.
     """
-    gm_td = time.strptime(date, format_str)
+    gm_td = time.strptime(date, DATE_FORMAT)
     d = datetime.date(gm_td.tm_year, gm_td.tm_mon, gm_td.tm_mday)
     day = datetime.timedelta(days=1)
     d2 = d + day
-    next_date = time.strftime(format_str, d2.timetuple())
+    next_date = time.strftime(DATE_FORMAT, d2.timetuple())
     return next_date
-
 
 
 def getStateFileLocation(cfg):
@@ -43,8 +37,7 @@ def getStateFileLocation(cfg):
     return state_file
 
 
-
-def getGeneratorState(cfg, format_str):
+def getGeneratorState(cfg, DATE_FORMAT):
     """
     Get state of where to the UR generation has reached in the log.
     This is two string tuple containing the jobid and the log file.
@@ -53,7 +46,7 @@ def getGeneratorState(cfg, format_str):
     if not os.path.exists(state_file):
         # no statefile -> we start from a couple of days back
         t_old = time.time() - 500000
-        return None, getDate(time.gmtime(t_old), format_str)
+        return None, time.strftime(DATE_FORMAT, time.gmtime(t_old))
 
     state_data = open(state_file).readline().strip() # state is only on the first line
     job_id, date = state_data.split(' ', 2)

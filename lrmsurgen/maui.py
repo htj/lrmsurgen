@@ -11,6 +11,7 @@ import time
 import datetime
 import logging
 
+from common import *
 from lrmsurgen import config, usagerecord
 
 
@@ -18,7 +19,6 @@ from lrmsurgen import config, usagerecord
 MAUI_DATE_FORMAT = '%a_%b_%d_%Y'
 DEFAULT_LOG_DIR  = '/var/spool/maui'
 STATS_DIR        = 'stats'
-STATE_FILE       = 'maui.state'
 MAUI_CFG_FILE    = 'maui.cfg'
 
 
@@ -202,75 +202,6 @@ def shouldGenerateUR(log_entry, user_map):
 
 
 
-def getMauiDate(gmtime):
-    """
-    Returns a maui date, e.g., 'Thu_Dec_10_2009', given a time.gmtime object.
-    """
-    return time.strftime(MAUI_DATE_FORMAT, gmtime)
-
-
-
-def getIncrementalMauiDate(maui_date):
-    """
-    Returns the following day in maui date format, given a date
-    in maui date format.
-    """
-    gm_td = time.strptime(maui_date, MAUI_DATE_FORMAT)
-    d = datetime.date(gm_td.tm_year, gm_td.tm_mon, gm_td.tm_mday)
-    day = datetime.timedelta(days=1)
-    d2 = d + day
-    next_maui_date = time.strftime(MAUI_DATE_FORMAT, d2.timetuple())
-    return next_maui_date
-
-
-
-def getStateFileLocation(cfg):
-    """
-    Returns the location of state file
-    The state file contains the information of whereto the ur generation has been processed
-    """
-    state_dir = config.getConfigValue(cfg, config.SECTION_COMMON, config.STATEDIR, config.DEFAULT_STATEDIR)
-    state_file = os.path.join(state_dir, STATE_FILE)
-    return state_file
-
-
-
-def getGeneratorState(cfg):
-    """
-    Get state of where to the UR generation has reached in the maui log.
-    This is two string tuple containing the jobid and the log file.
-    """
-    state_file = getStateFileLocation(cfg)
-    if not os.path.exists(state_file):
-        # no statefile -> we start from today
-        t_old = time.time() - 500000
-        return None, getMauiDate(time.gmtime(t_old))
-
-    state_data = open(state_file).readline().strip() # state is only on the first line
-    job_id, maui_date = state_data.split(' ', 2)
-    if job_id == '-':
-        job_id = None
-    return job_id, maui_date
-
-
-def writeGeneratorState(cfg, job_id, maui_log_file):
-    """
-    Write the state of where the maui logs have been parsed to.
-    This is a job id and maui date (log file and entry).
-    """
-    state_file = getStateFileLocation(cfg)
-    state_data = '%s %s' % (job_id or '-', maui_log_file)
-
-    dirpath = os.path.dirname(state_file)
-    if not os.path.exists(dirpath):
-        os.makedirs(dirpath, mode=0750)
-
-    f = open(state_file, 'w')
-    f.write(state_data)
-    f.close()
-
-
-
 def generateUsageRecords(cfg, hostname, user_map, project_map):
     """
     Starts the UR generation process.
@@ -279,9 +210,8 @@ def generateUsageRecords(cfg, hostname, user_map, project_map):
     maui_spool_dir = config.getConfigValue(cfg, config.SECTION_MAUI, config.MAUI_SPOOL_DIR,
                                            config.DEFAULT_MAUI_SPOOL_DIR)
     maui_server_host = getMauiServer(maui_spool_dir)
-    maui_date_today = getMauiDate(time.gmtime())
-    job_id, maui_date = getGeneratorState(cfg)
-    #print job_id, maui_date
+    maui_date_today = time.strftime(MAUI_DATE_FORMAT, time.gmtime())
+    job_id, maui_date = getGeneratorState(cfg, MAUI_DATE_FORMAT)
 
     missing_user_mappings = {}
 
@@ -333,7 +263,7 @@ def generateUsageRecords(cfg, hostname, user_map, project_map):
         if maui_date == maui_date_today:
             break
 
-        maui_date = getIncrementalMauiDate(maui_date)
+        maui_date = getIncrementalDate(maui_date, MAUI_DATE_FORMAT)
         job_id = None
 
     if missing_user_mappings:

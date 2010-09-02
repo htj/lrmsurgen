@@ -17,9 +17,13 @@ DEFAULT_LOG_FILE        = '/var/log/lrmsurgen.log'
 DEFAULT_LOG_DIR         = '/var/spool/lrmsurgen/usagerecords'
 DEFAULT_STATEDIR        = '/var/spool/lrmsurgen'
 DEFAULT_MAUI_SPOOL_DIR  = '/var/spool/maui'
+DEFAULT_MAUI_STATE_FILE = 'maui.state'
+DEFAULT_TORQUE_ACCOUNTING_DIR  = '/var/spool/torque/server_priv/accounting/'
+DEFAULT_TORQUE_STATE_FILE = 'torque.state'
 
 SECTION_COMMON = 'common'
 SECTION_MAUI   = 'maui'
+SECTION_TORQUE   = 'torque'
 
 HOSTNAME   = 'hostname'
 USERMAP    = 'usermap'
@@ -29,6 +33,9 @@ LOGFILE    = 'logfile'
 STATEDIR   = 'statedir'
 
 MAUI_SPOOL_DIR  = 'spooldir'
+MAUI_STATE_FILE = 'statefile'
+TORQUE_ACCOUNTING_DIR  = 'torqueaccountingdir'
+TORQUE_STATE_FILE = 'statefile'
 
 
 # regular expression for matching usermap/projectmap lines
@@ -93,4 +100,12 @@ def getProjectMap(project_map_file):
 
     project_map = readFileMap(project_map_file)
     return project_map
+
+
+def getStateFile(cfg):
+    if SECTION_MAUI in cfg.sections():
+        return getConfigValue(cfg, SECTION_MAUI, MAUI_STATE_FILE, DEFAULT_MAUI_STATE_FILE)
+    elif SECTION_TORQUE in cfg.sections():
+        return getConfigValue(cfg, SECTION_TORQUE, TORQUE_STATE_FILE, DEFAULT_TORQUE_STATE_FILE)
+
 
