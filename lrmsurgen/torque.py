@@ -77,12 +77,12 @@ class TorqueLogParser:
 
 
 
-def getSeconds(torque_time):
+def getSeconds(torque_timestamp):
     """
     Convert time string in the form HH:MM:SS to seconds
     """
-    (hours, minutes, seconds) = torque_time.split(':')
-    return int(hours)*3600+int(minutes)*60+int(seconds)
+    (hours, minutes, seconds) = torque_timestamp.split(':')
+    return int(hours)*3600 + int(minutes)*60 + int(seconds)
 
 
 def getCoreCount(nodes):
