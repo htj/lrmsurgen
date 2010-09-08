@@ -35,7 +35,7 @@ STATEDIR   = 'statedir'
 MAUI_SPOOL_DIR  = 'spooldir'
 MAUI_STATE_FILE = 'statefile'
 
-TORQUE_SPOOLDIR = 'torqueaccountingdir'
+TORQUE_SPOOL_DIR = 'spooldir'
 TORQUE_STATE_FILE = 'statefile'
 
 
