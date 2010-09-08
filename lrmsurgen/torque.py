@@ -122,7 +122,6 @@ def createUsageRecord(log_entry, hostname, user_map, project_map, missing_user_m
     submit_time  = int(log_entry['ctime'])
     start_time   = int(log_entry['start'])
     end_time     = int(log_entry['end'])
-    account_name = log_entry['group']
     utilized_cpu = getSeconds(log_entry['resources_used.cput'])
     wall_time    = getSeconds(log_entry['resources_used.walltime'])
     core_count   = getCoreCount(log_entry['Resource_List.nodes'])
@@ -139,12 +138,11 @@ def createUsageRecord(log_entry, hostname, user_map, project_map, missing_user_m
         missing_user_mappings[user_name] = True
 
     vo_info = []
-    if account_name is not None:
-        mapped_project = project_map.get(account_name)
-        if mapped_project is not None:
-            voi = usagerecord.VOInformation()
-            voi.type = 'lrmsurgen-projectmap'
-            voi.name = mapped_project
+    mapped_project = project_map.get(user_name)
+    if mapped_project is not None:
+        voi = usagerecord.VOInformation()
+        voi.type = 'lrmsurgen-projectmap'
+        voi.name = mapped_project
 
     ## fill in usage record fields
     ur = usagerecord.UsageRecord()
@@ -163,7 +161,6 @@ def createUsageRecord(log_entry, hostname, user_map, project_map, missing_user_m
     ur.end_time         = usagerecord.epoch2isoTime(end_time)
     ur.cpu_duration     = utilized_cpu
     ur.wall_duration    = wall_time
-    ur.project_name     = account_name
     ur.vo_info         += vo_info
 
     return ur
