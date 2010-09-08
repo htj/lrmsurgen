@@ -8,7 +8,6 @@
 
 import os
 import time
-import datetime
 import logging
 
 from common import *
