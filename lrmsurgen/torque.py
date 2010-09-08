@@ -33,19 +33,21 @@ class TorqueLogParser:
 
 
     def splitLineEntry(self, line):
-        fields = line.split(' ')
-        fieldsTmp = {}
-        startFields = fields[1].split(';')
-        fieldsTmp['entrytype'] = startFields[1]
-        fieldsTmp['jobid'] = startFields[2]
-        fieldsTmp['user'] = startFields[3].split('=')[1]
-        for e in fields:
+        line_tokens = line.split(' ')
+        fields = {}
+
+        start_fields = line_tokens[1].split(';')
+        fields['entrytype'] = start_fields[1]
+        fields['jobid'] = start_fields[2]
+        fields['user'] = start_fields[3].split('=')[1]
+
+        for e in line_tokens:
             e = e.strip()
             r = e.split('=')
             if len(r) >= 2:
-                fieldsTmp[r[0]] = '='.join(r[1:len(r)])
+                fields[r[0]] = '='.join(r[1:len(r)])
 
-        return fieldsTmp
+        return fields
 
 
     def getNextLogLine(self):
