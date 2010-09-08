@@ -10,8 +10,7 @@ import os
 import time
 import logging
 
-from common import *
-from lrmsurgen import config, usagerecord
+from lrmsurgen import config, common, usagerecord
 
 
 
@@ -176,7 +175,7 @@ def generateUsageRecords(cfg, hostname, user_map, project_map):
     torque_accounting_dir = config.getConfigValue(cfg, config.SECTION_TORQUE,
         config.TORQUE_ACCOUNTING_DIR, config.DEFAULT_TORQUE_ACCOUNTING_DIR)
     torque_date_today = time.strftime(TORQUE_DATE_FORMAT, time.gmtime())
-    job_id, torque_date = getGeneratorState(cfg, TORQUE_DATE_FORMAT)
+    job_id, torque_date = common.getGeneratorState(cfg, TORQUE_DATE_FORMAT)
 
     missing_user_mappings = {}
 
@@ -211,7 +210,7 @@ def generateUsageRecords(cfg, hostname, user_map, project_map):
 
             ur_file = os.path.join(ur_dir, job_id)
             ur.writeXML(ur_file)
-            writeGeneratorState(cfg, job_id, torque_date)
+            common.writeGeneratorState(cfg, job_id, torque_date)
             logging.info('Wrote usage record to %s' % ur_file)
 
             job_id = None
@@ -219,7 +218,7 @@ def generateUsageRecords(cfg, hostname, user_map, project_map):
         if torque_date == torque_date_today:
             break
 
-        torque_date = getIncrementalDate(torque_date, TORQUE_DATE_FORMAT)
+        torque_date = common.getIncrementalDate(torque_date, TORQUE_DATE_FORMAT)
         job_id = None
 
     if missing_user_mappings:

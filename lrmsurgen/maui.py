@@ -10,8 +10,7 @@ import os
 import time
 import logging
 
-from common import *
-from lrmsurgen import config, usagerecord
+from lrmsurgen import config, common, usagerecord
 
 
 
@@ -210,7 +209,7 @@ def generateUsageRecords(cfg, hostname, user_map, project_map):
                                            config.DEFAULT_MAUI_SPOOL_DIR)
     maui_server_host = getMauiServer(maui_spool_dir)
     maui_date_today = time.strftime(MAUI_DATE_FORMAT, time.gmtime())
-    job_id, maui_date = getGeneratorState(cfg, MAUI_DATE_FORMAT)
+    job_id, maui_date = common.getGeneratorState(cfg, MAUI_DATE_FORMAT)
 
     missing_user_mappings = {}
 
@@ -254,7 +253,7 @@ def generateUsageRecords(cfg, hostname, user_map, project_map):
 
             ur_file = os.path.join(ur_dir, job_id)
             ur.writeXML(ur_file)
-            writeGeneratorState(cfg, job_id, maui_date)
+            common.writeGeneratorState(cfg, job_id, maui_date)
             logging.info('Wrote usage record to %s' % ur_file)
 
             job_id = None
@@ -262,7 +261,7 @@ def generateUsageRecords(cfg, hostname, user_map, project_map):
         if maui_date == maui_date_today:
             break
 
-        maui_date = getIncrementalDate(maui_date, MAUI_DATE_FORMAT)
+        maui_date = common.getIncrementalDate(maui_date, MAUI_DATE_FORMAT)
         job_id = None
 
     if missing_user_mappings:
