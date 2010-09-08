@@ -23,7 +23,7 @@ def getIncrementalDate(date, date_format):
     d = datetime.date(gm_td.tm_year, gm_td.tm_mon, gm_td.tm_mday)
     day = datetime.timedelta(days=1)
     d2 = d + day
-    next_date = time.strftime(DATE_FORMAT, d2.timetuple())
+    next_date = time.strftime(date_format, d2.timetuple())
     return next_date
 
 
