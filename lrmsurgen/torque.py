@@ -172,8 +172,10 @@ def generateUsageRecords(cfg, hostname, user_map, project_map):
     Starts the UR generation process.
     """
 
-    torque_accounting_dir = config.getConfigValue(cfg, config.SECTION_TORQUE,
-        config.TORQUE_ACCOUNTING_DIR, config.DEFAULT_TORQUE_ACCOUNTING_DIR)
+    torque_spool_dir = config.getConfigValue(cfg, config.SECTION_TORQUE,
+                                             config.TORQUE_SPOOL_DIR, config.DEFAULT_TORQUE_SPOOL_DIR)
+    torque_accounting_dir = os.path.join(torque_spool_dir, 'server_priv', 'accounting')
+
     torque_date_today = time.strftime(TORQUE_DATE_FORMAT, time.gmtime())
     job_id, torque_date = common.getGeneratorState(cfg, TORQUE_DATE_FORMAT)
 

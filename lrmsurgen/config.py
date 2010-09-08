@@ -18,12 +18,12 @@ DEFAULT_LOG_DIR         = '/var/spool/lrmsurgen/usagerecords'
 DEFAULT_STATEDIR        = '/var/spool/lrmsurgen'
 DEFAULT_MAUI_SPOOL_DIR  = '/var/spool/maui'
 DEFAULT_MAUI_STATE_FILE = 'maui.state'
-DEFAULT_TORQUE_ACCOUNTING_DIR  = '/var/spool/torque/server_priv/accounting/'
+DEFAULT_TORQUE_SPOOL_DIR = '/var/spool/torque'
 DEFAULT_TORQUE_STATE_FILE = 'torque.state'
 
 SECTION_COMMON = 'common'
 SECTION_MAUI   = 'maui'
-SECTION_TORQUE   = 'torque'
+SECTION_TORQUE = 'torque'
 
 HOSTNAME   = 'hostname'
 USERMAP    = 'usermap'
@@ -34,7 +34,8 @@ STATEDIR   = 'statedir'
 
 MAUI_SPOOL_DIR  = 'spooldir'
 MAUI_STATE_FILE = 'statefile'
-TORQUE_ACCOUNTING_DIR  = 'torqueaccountingdir'
+
+TORQUE_SPOOLDIR = 'torqueaccountingdir'
 TORQUE_STATE_FILE = 'statefile'
 
 
