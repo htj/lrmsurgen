@@ -3,7 +3,8 @@ LRMS UR Generator.
 Tool for generating usage records from LRMS logs and registering the records to
 SGAS.
 
-Currently Maui is the only supported LRMS.
+Currently Maui and Torque are the only supported LRMS.
+Support for SLURM and Load Leveler as planned.
 
 
 For installation instructions, see docs/setup
