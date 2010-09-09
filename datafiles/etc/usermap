@@ -1,6 +1,11 @@
+# usermap - mapping from a local username to a global identity
+# example: htj -> "/O=Grid/O=NorduGrid/OU=ndgf.org/CN=Henrik Thostrup Jensen"
+# having such mappings will ensure that a user has a single identity in
+# the accounting system, instead of multiple local user accounts
+#
 # remove the # for entries to work
 #
-# local     "userdn"
+# user       userdn
+#
 #test        "/O=Grid/O=ExampleOrganization/OU=example.org/CN=Test User"
-# disable ur logging for johndoe user
-#johndoe     -
+
