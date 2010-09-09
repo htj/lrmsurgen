@@ -110,7 +110,7 @@ def getCoreCount(nodes):
     return cores
 
 
-def createUsageRecord(log_entry, hostname, user_map, project_map, missing_user_mappings):
+def createUsageRecord(log_entry, hostname, user_map, vo_map, missing_user_mappings):
     """
     Creates a Usage Record object given a Torque log entry.
     """
@@ -138,9 +138,9 @@ def createUsageRecord(log_entry, hostname, user_map, project_map, missing_user_m
         missing_user_mappings[user_name] = True
 
     vo_info = []
-    mapped_project = project_map.get(user_name)
-    if mapped_project is not None:
-        voi = usagerecord.VOInformation(name=mapped_project, type_='lrmsurgen-projectmap')
+    mapped_vo = vo_map.get(user_name)
+    if mapped_vo is not None:
+        voi = usagerecord.VOInformation(name=mapped_vo, type_='lrmsurgen-vomap')
         vo_info.append(voi)
 
     ## fill in usage record fields
@@ -165,7 +165,7 @@ def createUsageRecord(log_entry, hostname, user_map, project_map, missing_user_m
     return ur
 
 
-def generateUsageRecords(cfg, hostname, user_map, project_map):
+def generateUsageRecords(cfg, hostname, user_map, vo_map):
     """
     Starts the UR generation process.
     """
@@ -202,7 +202,7 @@ def generateUsageRecords(cfg, hostname, user_map, project_map):
 
             job_id = log_entry['jobid']
 
-            ur = createUsageRecord(log_entry, hostname, user_map, project_map, missing_user_mappings)
+            ur = createUsageRecord(log_entry, hostname, user_map, vo_map, missing_user_mappings)
             log_dir = config.getConfigValue(cfg, config.SECTION_COMMON, config.LOGDIR, config.DEFAULT_LOG_DIR)
             ur_dir = os.path.join(log_dir, 'urs')
             if not os.path.exists(ur_dir):

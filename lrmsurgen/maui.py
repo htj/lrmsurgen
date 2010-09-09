@@ -87,7 +87,7 @@ def getMauiServer(maui_spool_dir):
 
 
 
-def createUsageRecord(log_entry, hostname, user_map, project_map, maui_server_host, missing_user_mappings):
+def createUsageRecord(log_entry, hostname, user_map, vo_map, maui_server_host, missing_user_mappings):
     """
     Creates a Usage Record object given a Maui log entry.
     """
@@ -126,10 +126,12 @@ def createUsageRecord(log_entry, hostname, user_map, project_map, maui_server_ho
 
     vo_info = []
     if account_name is not None:
-        mapped_project = project_map.get(account_name)
-        if mapped_project is not None:
-            voi = usagerecord.VOInformation(name=mapped_project, 'lrmsurgen-projectmap')
-            vo_info.append(voi)
+        mapped_vo = vo_map.get(account_name)
+    else:
+        mapped_vo = vo_map.get(user_name)
+    if mapped_vo is not None:
+        voi = usagerecord.VOInformation(name=mapped_vo, type_='lrmsurgen-vomap')
+        vo_info = [voi]
 
     wall_time = end_time - start_time
 
@@ -199,7 +201,7 @@ def shouldGenerateUR(log_entry, user_map):
 
 
 
-def generateUsageRecords(cfg, hostname, user_map, project_map):
+def generateUsageRecords(cfg, hostname, user_map, vo_map):
     """
     Starts the UR generation process.
     """
@@ -244,7 +246,7 @@ def generateUsageRecords(cfg, hostname, user_map, project_map):
                 logging.debug('Job %s: No UR will be generated.' % job_id)
                 continue
 
-            ur = createUsageRecord(log_entry, hostname, user_map, project_map, maui_server_host, missing_user_mappings)
+            ur = createUsageRecord(log_entry, hostname, user_map, vo_map, maui_server_host, missing_user_mappings)
             log_dir = config.getConfigValue(cfg, config.SECTION_COMMON, config.LOGDIR, config.DEFAULT_LOG_DIR)
             ur_dir = os.path.join(log_dir, 'urs')
             if not os.path.exists(ur_dir):

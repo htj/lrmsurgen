@@ -12,7 +12,7 @@ from optparse import OptionParser
 
 DEFAULT_CONFIG_FILE     = '/etc/lrmsurgen/lrmsurgen.conf'
 DEFAULT_USERMAP_FILE    = '/etc/lrmsurgen/usermap'
-DEFAULT_PROJECTMAP_FILE = '/etc/lrmsurgen/projectmap'
+DEFAULT_VOMAP_FILE      = '/etc/lrmsurgen/vomap'
 DEFAULT_LOG_FILE        = '/var/log/lrmsurgen.log'
 DEFAULT_LOG_DIR         = '/var/spool/lrmsurgen/usagerecords'
 DEFAULT_STATEDIR        = '/var/spool/lrmsurgen'
@@ -27,7 +27,7 @@ SECTION_TORQUE = 'torque'
 
 HOSTNAME   = 'hostname'
 USERMAP    = 'usermap'
-PROJECTMAP = 'projectmap'
+VOMAP      = 'vomap'
 LOGDIR     = 'logdir'
 LOGFILE    = 'logfile'
 STATEDIR   = 'statedir'
@@ -39,7 +39,7 @@ TORQUE_SPOOL_DIR = 'spooldir'
 TORQUE_STATE_FILE = 'statefile'
 
 
-# regular expression for matching usermap/projectmap lines
+# regular expression for matching mapping lines
 rx = re.compile('''\s*(.*)\s*"(.*)"''')
 
 
@@ -91,16 +91,10 @@ def readFileMap(map_file):
     return map_
 
 
-def getUserMap(user_map_file):
+def getMapping(map_file):
 
-    user_map = readFileMap(user_map_file)
-    return user_map
-
-
-def getProjectMap(project_map_file):
-
-    project_map = readFileMap(project_map_file)
-    return project_map
+    map_ = readFileMap(map_file)
+    return map_
 
 
 def getStateFile(cfg):
