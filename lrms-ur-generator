@@ -63,7 +63,6 @@ def main():
         from lrmsurgen import maui as lrms
     elif config.SECTION_TORQUE in sections:
         from lrmsurgen import torque as lrms
-    # more LRMSes to come...
 
     try:
         lrms.generateUsageRecords(cfg, hostname, user_map, project_map)

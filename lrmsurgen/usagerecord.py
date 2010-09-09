@@ -99,10 +99,10 @@ register_namespace('logger', LOGGER_NAMESPACE)
 
 class VOInformation:
 
-    def __init__(self):
-        self.type = None
-        self.name = None
-        self.issuer = None
+    def __init__(self, name=None, type_=None, issuer=None):
+        self.name = name
+        self.type_ = type_
+        self.issuer = issuer
         self.attributes = [] # [group, role, capability]
 
 

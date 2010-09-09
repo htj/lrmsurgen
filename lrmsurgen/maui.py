@@ -128,9 +128,8 @@ def createUsageRecord(log_entry, hostname, user_map, project_map, maui_server_ho
     if account_name is not None:
         mapped_project = project_map.get(account_name)
         if mapped_project is not None:
-            voi = usagerecord.VOInformation()
-            voi.type = 'lrmsurgen-projectmap'
-            voi.name = mapped_project
+            voi = usagerecord.VOInformation(name=mapped_project, 'lrmsurgen-projectmap')
+            vo_info.append(voi)
 
     wall_time = end_time - start_time
 

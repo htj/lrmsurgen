@@ -140,9 +140,8 @@ def createUsageRecord(log_entry, hostname, user_map, project_map, missing_user_m
     vo_info = []
     mapped_project = project_map.get(user_name)
     if mapped_project is not None:
-        voi = usagerecord.VOInformation()
-        voi.type = 'lrmsurgen-projectmap'
-        voi.name = mapped_project
+        voi = usagerecord.VOInformation(name=mapped_project, type_='lrmsurgen-projectmap')
+        vo_info.append(voi)
 
     ## fill in usage record fields
     ur = usagerecord.UsageRecord()
