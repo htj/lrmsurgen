@@ -1,16 +1,17 @@
 This document describes how to setup the LRMS UR Generator tool alongside the
-ARC UR Logger. It is not a difficult thing to do, but it is highly recommended
-to understand the problem first.
+ARC UR Logger, such that jobs are not accounting for twice or more.
+
+It is not a difficult thing to do, but it is highly recommended to understand
+the problem first.
 
 
 == The Problem ==
 
 When both the LRMS UR Generator and ARC UR Logger are both deployed at the same
-site, they will most likely both generate usage records for the same job, and
-register them. If not handled properly, this will cause double accounting for
-the same job. However "just" having LRMS logging is insuficient as a lot of
-information is not available at LRMS level (e.g., grid identity, vo
-information).
+site, they will both generate usage records for the same job, and register
+them. If not handled properly, this will cause double accounting for the same
+jobs. However "just" having LRMS logging is insuficient as a lot of information
+is not available at LRMS level (e.g., grid identity, vo information).
 
 
 == Duplicate Detection ==
@@ -34,7 +35,7 @@ first).
 
 == Configuration ==
 
-So, in order for the duplicate detection to work the host FQDN used at the
+In order for the duplicate detection to work the host FQDN used at the
 different loggers must be the same. If your setup only have a single frontend
 machine for submitting jobs, configuration will typically not be required.
 
@@ -43,7 +44,7 @@ Logger and the LRMS UR Generator, such that the records are produced with
 identical hostnames. E.g., if you have a setup with an ARC frontend at the host
 arc.mysite.example.org, and an LRMS frontend at lrms.mysite.example.org, you
 should configure the to loggers such that they use the same FQDN, e.g.,
-mysite.example.org. This configuration is explained in the next:
+mysite.example.org. Example configuration follows:
 
 ARC UR Logger:
 Set the hostname setting in the [logger] section in arc.conf, e.g.,:
