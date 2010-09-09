@@ -27,6 +27,7 @@ OGF_UR_NAMESPACE  = "http://schema.ogf.org/urf/2003/09/urf"
 DEISA_NAMESPACE   = "http://rmis.deisa.org/acct"
 SGAS_VO_NAMESPACE = "http://www.sgas.se/namespaces/2009/05/ur/vo"
 SGAS_AT_NAMESPACE = "http://www.sgas.se/namespaces/2009/07/ur"
+LOGGER_NAMESPACE  = "http://www.sgas.se/namespaces/2010/08/logger"
 
 # job usage element/attribute names
 JOB_USAGE_RECORD     = ET.QName("{%s}JobUsageRecord" % OGF_UR_NAMESPACE)
@@ -72,6 +73,13 @@ SGAS_EXIT_CODE           = ET.QName("{%s}ExitCode"           % SGAS_AT_NAMESPACE
 SGAS_MAJOR_PAGE_FAULTS   = ET.QName("{%s}MajorPageFaults"    % SGAS_AT_NAMESPACE)
 SGAS_RUNTIME_ENVIRONMENT = ET.QName("{%s}RuntimeEnvironment" % SGAS_AT_NAMESPACE)
 
+# logger elements and attributes
+LOGGER_NAME         = ET.QName("{%s}LoggerName"         % LOGGER_NAMESPACE)
+LOGGER_VERSION      = ET.QName("{%s}version"            % LOGGER_NAMESPACE)
+
+# values for the logger name + version
+LOGGER_NAME_VALUE    = 'SGAS-BaRT'
+LOGGER_VERSION_VALUE = '001'
 
 # register namespaces in element tree so we get more readable xml files
 # the semantics of the xml files does not change due to this
@@ -85,6 +93,7 @@ register_namespace('ur', OGF_UR_NAMESPACE)
 register_namespace('deisa', DEISA_NAMESPACE)
 register_namespace('vo', SGAS_VO_NAMESPACE)
 register_namespace('sgas', SGAS_AT_NAMESPACE)
+register_namespace('logger', LOGGER_NAMESPACE)
 
 
 
@@ -128,6 +137,9 @@ class UsageRecord:
         self.exit_code          = None
         self.major_page_faults  = None
         self.runtime_environments = []
+        # logger attributes
+        self.logger_name        = LOGGER_NAME
+        self.logger_version     = LOGGER_VERSION
 
 
     def generateTree(self):
@@ -205,6 +217,11 @@ class UsageRecord:
             setElement(ur, SGAS_MAJOR_PAGE_FAULTS, self.major_page_faults)
         for renv in self.runtime_environments:
             setElement(ur, SGAS_RUNTIME_ENVIRONMENT, renv)
+
+        # set logger name and version
+        logger_name = ET.SubElement(ur, LOGGER_NAME)
+        logger_name.text = LOGGER_NAME_VALUE
+        logger_name.set(LOGGER_VERSION, LOGGER_VERSION_VALUE)
 
         return ET.ElementTree(ur)
 
