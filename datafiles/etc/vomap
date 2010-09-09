@@ -1,0 +1,19 @@
+# vomap - a mapping from a local username to global project name (vo)
+# example: htj -> "ndgf.org"
+# having a vo mapping makes it possible to aggregated numbers for a given
+# project which has multiple users and uses multiple machines.
+# It is possible to specify both users and local project as a source for a
+# mapping. In maui the scheduling group is the project. Torque jobs are not
+# assinged a project. You can select a VO name as you see fit, but please
+# try and use names which will not clash accidentally, i.e., it is good to
+# FQDNs instead of jobs a single name. E.g., "icecube.swegrid.se" would be
+# better than "icecube"
+#
+# remove the # for entries to work
+#
+# account   mapped-project
+#
+#test       "test.example.org
+#staff      "staff.example.org"
+#grid       "gridusers.example.org"
+
